@@ -1,0 +1,12 @@
+exclude:
+  - warmstart/
+  - tests/
+  - docs/
+  - examples/
+  - templates/
+  - scripts/
+  - pyproject.toml
+  - CONTRIBUTING.md
+  - README.md
+  - LICENSE
+  - .github/
