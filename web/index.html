@@ -29,7 +29,6 @@
   .form-grid label{color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px}
   .form-grid input,.form-grid select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem}
   .form-grid input:focus,.form-grid select:focus{outline:none;border-color:var(--a1)}
-  .form-grid .wide{grid-column:1/-1}
   .options{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
   .opt{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s;font-size:0.9rem;line-height:1.5}
   .opt:hover{border-color:var(--a1)}
@@ -77,7 +76,7 @@
     </div>
   </div>
   <div class="footer">
-    <a href="https://github.com/diandian1001/warmstart" target="_blank">GitHub</a> · MIT · v0.4.1
+    <a href="https://github.com/diandian1001/warmstart" target="_blank">GitHub</a> · MIT · v0.4.2
   </div>
   <div class="toast" id="toast"></div>
 </div>
@@ -94,6 +93,7 @@ const BIRTH_FIELDS = [
   {id:"mbti",label:"MBTI（选填）",type:"select",options:["","INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"],hint:"如果做过MBTI测试可以填，不知道可以跳过"},
 ];
 
+// MBTI 16类型 → 4个维度的风格偏好
 const MBTI_MAP = {
   INTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
   INTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
@@ -405,19 +405,20 @@ function nextSceneQ(){ step++; render(); }
 function prevSceneQ(idx){ if(step>2) step--; else {step=1;sceneId=null} render(); }
 
 // ============================================================
-// 生成画像
+// 生成画像（核心：场景维度优先，MBTI 补充）
 // ============================================================
 function buildPrompt(){
   const qs = SCENE_Q[sceneId];
   const scene = SCENARIOS.find(s=>s.id===sceneId);
   const sceneLabel = scene?scene.label:'未选择';
 
+  // 场景维度答案
   let dims = [];
   qs.forEach((q,i)=>{
     const a = sceneAnswers[i];
     if(a===undefined||a===null||a===-1) dims.push({badge:q.badge,val:'未填写'});
     else if(typeof a==='string') dims.push({badge:q.badge,val:a});
-    else dims.push({badge:q.badge,val:q.opts[a].v,q:q.q,a:q.opts[a].t});
+    else dims.push({badge:q.badge,val:q.opts[a].v});
   });
 
   // 出生信息
@@ -430,14 +431,14 @@ function buildPrompt(){
   const birthStr = birthLine.length?birthLine.join(''):'未填写';
   const hasBirth = birth.year && birth.month && birth.day;
 
-  // MBTI映射
-  let mbtiBlock = '';
+  // MBTI 映射
+  let mbtiTraits = [];
   if(birth.mbti && MBTI_MAP[birth.mbti]){
     const m = MBTI_MAP[birth.mbti];
-    mbtiBlock = `## MBTI 类型偏好\n类型：${birth.mbti}\n${m.e}\n${m.i||m.s}\n${m.t||m.f}\n${m.j||m.p}\n`;
+    mbtiTraits = [m.e, m.i||m.s, m.t||m.f, m.j||m.p];
   }
 
-  // 组装
+  // 组装 prompt（顺序很重要：场景维度 > MBTI补充）
   let prompt = `# AI 画像 · ${sceneLabel}
 
 ## 用户背景
@@ -445,14 +446,26 @@ function buildPrompt(){
 - 使用场景：${sceneLabel}
 
 `;
-  if(mbtiBlock) prompt += mbtiBlock + '\n';
 
+  // 场景维度（优先级最高，是用户当前的实际需求）
   dims.forEach(d=>{
     prompt += `## ${d.badge}\n${d.val}\n\n`;
   });
 
+  // MBTI 补充（放在场景维度之后，是性格背景参考）
+  if(mbtiTraits.length){
+    prompt += `## MBTI 补充参考
+类型：${birth.mbti}
+${mbtiTraits.join('\n')}
+
+> ⚠️ 以上为性格背景参考，优先级低于场景维度的回答。
+> 如果场景回答与 MBTI 推断有冲突，以场景回答为准。
+
+`;
+  }
+
   prompt += `---
-> 本画像由 Warmstart v0.4.1 生成，复制到任何 AI 的 system prompt 中即可生效。
+> 本画像由 Warmstart v0.4.2 生成，复制到任何 AI 的 system prompt 中即可生效。
 `;
   return prompt;
 }
