@@ -3,79 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Warmstart — 三重视角画像</title>
+<title>Warmstart — 场景智能画像</title>
 <style>
-  :root { --bg:#0f1117; --card:#1a1d27; --border:#2a2d3a; --text:#e1e4eb; --sub:#8b8fa3;
-    --a1:#7c5cfc; --a2:#f59e0b; --a3:#10b981; --radius:14px; }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; line-height:1.6; min-height:100vh; display:flex; justify-content:center; }
-  .container { max-width:640px; width:100%; padding:30px 20px; }
-  .header { text-align:center; margin-bottom:16px; }
-  .header h1 { font-size:1.6rem; font-weight:700; }
-  .header p { color:var(--sub); font-size:0.9rem; margin-top:4px; }
-  .section-bar { display:flex; gap:6px; margin-bottom:24px; }
-  .section-step { flex:1; height:4px; background:var(--border); border-radius:4px; transition:background 0.3s; }
-  .section-step.done { background:var(--a1); }
-  .section-step.done.s2 { background:var(--a2); }
-  .section-step.done.s3 { background:var(--a3); }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:36px 28px; animation:fadeIn 0.35s ease; }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-  .badge { display:inline-block; padding:3px 12px; border-radius:20px; font-size:0.75rem; font-weight:600; margin-bottom:16px; }
-  .badge.s1 { background:rgba(124,92,252,0.12); color:var(--a1); }
-  .badge.s2 { background:rgba(245,158,11,0.12); color:var(--a2); }
-  .badge.s3 { background:rgba(16,185,129,0.12); color:var(--a3); }
-  .q-counter { color:var(--sub); font-size:0.8rem; margin-bottom:20px; }
-  .q-title { font-size:1.15rem; font-weight:600; margin-bottom:24px; line-height:1.5; }
-  .options { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
-  .opt { background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:15px 18px; cursor:pointer; transition:all 0.2s; font-size:0.93rem; line-height:1.5; }
-  .opt:hover { border-color:var(--a1); }
-  .opt.picked { border-color:var(--a1); background:rgba(124,92,252,0.06); }
-  .opt.picked.s2 { border-color:var(--a2); background:rgba(245,158,11,0.06); }
-  .opt.picked.s3 { border-color:var(--a3); background:rgba(16,185,129,0.06); }
-  .opt.picked::after { content:" ✓"; float:right; font-weight:700; color:var(--a1); }
-  .opt.picked.s2::after { color:var(--a2); }
-  .opt.picked.s3::after { color:var(--a3); }
-  .fill-input { width:100%; background:var(--bg); border:1.5px solid var(--border); border-radius:10px; padding:16px; color:var(--text); font-size:0.93rem; font-family:inherit; resize:vertical; min-height:100px; transition:border-color 0.2s; margin-bottom:28px; }
-  .fill-input:focus { outline:none; border-color:var(--a3); }
-  .nav { display:flex; justify-content:space-between; align-items:center; gap:12px; }
-  .btn { padding:11px 28px; border-radius:10px; border:none; font-size:0.9rem; font-weight:600; cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-  .btn-next { background:var(--a1); color:#fff; }
-  .btn-next:hover { opacity:0.9; }
-  .btn-next.s2 { background:var(--a2); }
-  .btn-next.s3 { background:var(--a3); }
-  .btn-back { background:transparent; color:var(--sub); border:1px solid var(--border); }
-  .btn-back:hover { border-color:var(--a1); color:var(--text); }
-  .btn-skip { background:transparent; color:var(--sub); font-size:0.82rem; cursor:pointer; }
-  .btn-skip:hover { color:var(--text); }
-  .result { display:none; animation:fadeIn 0.5s ease; }
-  .result.visible { display:block; }
-  .result h2 { text-align:center; margin-bottom:16px; font-size:1.25rem; }
-  .prompt-box { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; font-family:'SF Mono','Fira Code',monospace; font-size:0.83rem; line-height:1.8; white-space:pre-wrap; word-break:break-word; max-height:500px; overflow-y:auto; margin-bottom:20px; }
-  .actions { display:flex; gap:12px; }
-  .btn-copy { background:var(--a3); color:#fff; }
-  .btn-reset { background:var(--card); color:var(--text); border:1px solid var(--border); }
-  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:var(--a1); color:#fff; padding:12px 28px; border-radius:10px; font-weight:600; font-size:0.9rem; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:100; }
-  .toast.show { opacity:1; }
-  .footer { text-align:center; margin-top:36px; color:var(--sub); font-size:0.78rem; }
-  .footer a { color:var(--a1); text-decoration:none; }
-  @media (max-width:500px) { .container { padding:20px 12px; } .card { padding:24px 18px; } }
+  :root{--bg:#0f1117;--card:#1a1d27;--border:#2a2d3a;--text:#e1e4eb;--sub:#8b8fa3;--a1:#7c5cfc;--a2:#f59e0b;--a3:#10b981;--radius:14px}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;min-height:100vh;display:flex;justify-content:center}
+  .container{max-width:640px;width:100%;padding:30px 20px}
+  .header{text-align:center;margin-bottom:16px}
+  .header h1{font-size:1.6rem;font-weight:700}
+  .header p{color:var(--sub);font-size:0.9rem;margin-top:4px}
+  .progress{display:flex;gap:4px;margin-bottom:24px}
+  .progress-dot{flex:1;height:4px;background:var(--border);border-radius:4px;transition:background 0.3s}
+  .progress-dot.done{background:var(--a1)}
+  .progress-dot.done.s2{background:var(--a2)}
+  .progress-dot.done.s3{background:var(--a3)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px 24px;animation:fadeIn 0.3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;margin-bottom:14px}
+  .badge.s1{background:rgba(124,92,252,0.12);color:var(--a1)}
+  .badge.s2{background:rgba(245,158,11,0.12);color:var(--a2)}
+  .badge.s3{background:rgba(16,185,129,0.12);color:var(--a3)}
+  .q-label{color:var(--sub);font-size:0.8rem;margin-bottom:12px}
+  .q-title{font-size:1.1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+  .privacy-note{color:var(--sub);font-size:0.78rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.6}
+  .privacy-note b{color:var(--a1)}
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+  .opt{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s;font-size:0.9rem;line-height:1.5}
+  .opt:hover{border-color:var(--a1)}
+  .opt.picked{border-color:var(--a1);background:rgba(124,92,252,0.06)}
+  .opt.picked::after{content:" ✓";float:right;font-weight:700;color:var(--a1)}
+  .opt.s2{border-color:var(--a2);background:rgba(245,158,11,0.06)}
+  .opt.s2::after{color:var(--a2)}
+  .opt.s3{border-color:var(--a3);background:rgba(16,185,129,0.06)}
+  .opt.s3::after{color:var(--a3)}
+  .fill-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-size:0.9rem;font-family:inherit;resize:vertical;min-height:90px;margin-bottom:24px}
+  .fill-input:focus{outline:none;border-color:var(--a3)}
+  .fill-hint{color:var(--sub);font-size:0.78rem;background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:20px;line-height:1.6}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .btn{padding:11px 24px;border-radius:10px;border:none;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+  .btn-next{background:var(--a1);color:#fff}.btn-next:hover{opacity:0.9}
+  .btn-next.s2{background:var(--a2)}.btn-next.s3{background:var(--a3)}
+  .btn-back{background:transparent;color:var(--sub);border:1px solid var(--border)}
+  .btn-back:hover{border-color:var(--a1);color:var(--text)}
+  .btn-skip{background:transparent;color:var(--sub);font-size:0.8rem;cursor:pointer}
+  .btn-skip:hover{color:var(--text)}
+  .result{display:none;animation:fadeIn 0.5s ease}.result.visible{display:block}
+  .result h2{text-align:center;margin-bottom:14px;font-size:1.2rem}
+  .prompt-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;font-family:'SF Mono','Fira Code',monospace;font-size:0.82rem;line-height:1.8;white-space:pre-wrap;word-break:break-word;max-height:500px;overflow-y:auto;margin-bottom:18px}
+  .actions{display:flex;gap:12px}
+  .btn-copy{background:var(--a3);color:#fff}.btn-copy:hover{opacity:0.9}
+  .btn-reset{background:var(--card);color:var(--text);border:1px solid var(--border)}
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--a1);color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;font-size:0.9rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}
+  .toast.show{opacity:1}
+  .footer{text-align:center;margin-top:32px;color:var(--sub);font-size:0.76rem}
+  .footer a{color:var(--a1);text-decoration:none}
+  @media(max-width:500px){.container{padding:18px 12px}.card{padding:20px 16px}.actions{flex-direction:column}.btn{width:100%;text-align:center}}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <h1>🧭 Warmstart</h1>
-    <p>三重画像 · 一次构建 · 任何 AI 第一次对话就认识你</p>
+    <p>选择场景 → 回答 4 题 → 任何 AI 第一次对话就认识你</p>
   </div>
-  <div class="section-bar" id="sectionBar">
-    <div class="section-step"></div>
-    <div class="section-step"></div>
-    <div class="section-step"></div>
-  </div>
+  <div class="progress" id="progress"></div>
   <div class="card" id="card"></div>
   <div class="result" id="result">
     <h2>✅ 你的专属 AI 画像</h2>
-    <p style="text-align:center;color:var(--sub);margin-bottom:16px;">三重视角已融合，复制到任何 AI 的 system prompt 中</p>
+    <p style="text-align:center;color:var(--sub);margin-bottom:14px">复制到任何 AI 的 system prompt 中即可生效</p>
     <div class="prompt-box" id="promptBox"></div>
     <div class="actions">
       <button class="btn btn-copy" onclick="copyPrompt()">📋 复制画像</button>
@@ -83,256 +78,391 @@
     </div>
   </div>
   <div class="footer">
-    <a href="https://github.com/diandian1001/warmstart" target="_blank">GitHub</a> · MIT · v0.3.3
+    <a href="https://github.com/diandian1001/warmstart" target="_blank">GitHub</a> · MIT · v0.4.0
   </div>
   <div class="toast" id="toast"></div>
 </div>
-
 <script>
-const LIFE_Q = [
-  {badge:"命宫", q:"你的核心性格更接近哪种？", opts:[
-    {t:"领导型：有主见、爱主导、目标感强", v:"领导型（紫微/天府类）"},
-    {t:"柔和型：善配合、亲和力好、不急躁、人际敏感", v:"柔和型（天同/太阴类）"},
-    {t:"灵活型：适应性强、随机应变、不喜欢被限制", v:"灵活型（天机/贪狼类）"},
-  ]},
-  {badge:"身宫", q:"当前人生阶段你最关注什么？", opts:[
-    {t:"事业突破：能力提升、晋升、创业、经济独立", v:"事业突破期"},
-    {t:"家庭生活：亲密关系、子女教育、父母照护", v:"家庭经营期"},
-    {t:"个人成长：学习新知、旅行探索、内心沉淀", v:"个人成长期"},
-    {t:"财务安全：储蓄投资、降低风险、稳定根基", v:"财务积累期"},
-  ]},
-  {badge:"迁移宫", q:"在对外场合你的表现风格？", opts:[
-    {t:"沉稳专业：严谨细致、可信赖、不随意表态", v:"沉稳专业型"},
-    {t:"热情外向：有感染力、善于破冰、乐于分享", v:"热情外向型"},
-    {t:"低调务实：先做事后说话、不张扬、真实力", v:"低调务实型"},
-  ]},
+// ============================================================
+// 数据定义
+// ============================================================
+
+// 公共出生信息（3题，可跳过）
+const BIRTH_Q = [
+  {id:"year",label:"出生年份",type:"number",placeholder:"如 1995",hint:"用于生成命盘快照，理解你当前的人生阶段。信息仅在本地处理，不会上传或存储。"},
+  {id:"month",label:"出生月份",type:"select",options:["","1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]},
+  {id:"day",label:"出生日",type:"number",placeholder:"1-31"},
+  {id:"hour",label:"出生时辰",type:"select",options:["未知","子时(23-1点)","丑时(1-3)","寅时(3-5)","卯时(5-7)","辰时(7-9)","巳时(9-11)","午时(11-13)","未时(13-15)","申时(15-17)","酉时(17-19)","戌时(19-21)","亥时(21-23)"]},
+  {id:"gender",label:"性别",type:"select",options:["","男","女"],hint:"影响大限顺逆排法。"},
 ];
 
-const PERSONALITY_Q = [
-  {badge:"做事风格", q:"面对一个新任务，你通常怎么做？", opts:[
-    {t:"先列计划、分步骤，确保每个环节都有数", s:1.0},
-    {t:"大概有个方向就开始，边做边调整", s:0.3},
-    {t:"看情况，重要的事会先计划", s:0.6},
-  ]},
-  {badge:"沟通偏好", q:"和别人沟通时，你更倾向于？", opts:[
-    {t:"直来直去，说重点就行", s:0.2},
-    {t:"先寒暄几句，关系融洽了再谈正事", s:1.0},
-    {t:"看对象，熟人就直说，不熟就多铺垫", s:0.6},
-  ]},
-  {badge:"思维方式", q:"遇到一个难题，你倾向于？", opts:[
-    {t:"尝试全新的方法，哪怕冒险", s:1.0},
-    {t:"用之前验证过的成熟方法", s:0.2},
-    {t:"看问题的性质，新问题用新方法", s:0.6},
-  ]},
-  {badge:"情绪反应", q:"当事情进展不顺时，你通常？", opts:[
-    {t:"容易焦虑，需要有人肯定方向是对的", s:1.0},
-    {t:"不太受影响，直接分析问题在哪", s:0.2},
-    {t:"会短暂焦虑但能很快调整", s:0.6},
-  ]},
-  {badge:"决策方式", q:"做重要决定时，你更依赖？", opts:[
-    {t:"自己的判断和分析", s:0.2},
-    {t:"多听几个人的意见再定", s:1.0},
-    {t:"自己判断为主，但会参考信任的人的意见", s:0.6},
-  ]},
+// 场景选择（1题）
+const SCENARIOS = [
+  {id:"writing",  label:"📝 写作与表达", desc:"写邮件、报告、文案、改写润色、翻译", color:"s1"},
+  {id:"research", label:"🔍 研究与学习", desc:"查资料、学技能、整理笔记、做调研",   color:"s1"},
+  {id:"planning", label:"📊 规划与管理", desc:"待办事项、日程安排、项目管理、财务规划", color:"s1"},
+  {id:"coding",   label:"💻 技术与编程", desc:"写代码、调试、学编程、技术方案",     color:"s1"},
+  {id:"creative", label:"🎨 创意与设计", desc:"做图、做视频、写内容、做PPT、头脑风暴", color:"s1"},
+  {id:"daily",    label:"💬 日常与陪伴", desc:"闲聊、问答、健康咨询、生活建议",      color:"s1"},
+  {id:"custom",   label:"⚙️ 自定义",    desc:"我的需求比较特殊，自己描述",         color:"s1"},
 ];
 
-const AGENT_Q = [
-  {badge:"用途", q:"你主要用这个 AI agent 做什么？", opts:[
-    {t:"工作助手（写文档、做分析、项目管理）", v:"工作助手"},
-    {t:"个人教练（学习规划、习惯养成、情绪支持）", v:"个人教练"},
-    {t:"日常对话（闲聊、陪伴、解答生活疑惑）", v:"日常陪伴"},
-    {t:"专业技能（编程、设计、研究、学术）", v:"专业工具"},
-  ]},
-  {badge:"语气", q:"你希望 agent 用什么语气回复你？", opts:[
-    {t:"正式专业：逻辑严密、用词准确", v:"正式专业"},
-    {t:"简洁高效：直击重点、不废话", v:"简洁高效"},
-    {t:"轻松随意：像朋友聊天、有温度", v:"轻松随意"},
-  ]},
-  {badge:"长度", q:"你偏好什么样的回复长度？", opts:[
-    {t:"简短精炼（一两句话说清）", v:"简短"},
-    {t:"适中（一段话，有要点有分析）", v:"适中"},
-    {t:"详细全面（多角度分析、分点展开）", v:"详细"},
-  ]},
-  {badge:"特别要求", q:"还有什么想对 agent 说的？", type:"fill", placeholder:"例如：避免英文缩写、优先中国本土案例、涉及心理话题时不下诊断……"},
-];
-
-// 修复1+2：标签修正
-const LABELS = {
-  conscientiousness:{high:"做事有计划，习惯先规划再执行。",low:"做事灵活，边做边调整，不喜欢被固定流程束缚。",mid:"做事有一定计划性，但也接受灵活调整。"},
-  extraversion:{high:"沟通中注重关系建立，喜欢先建立融洽感再谈正事。",low:"沟通风格直接，喜欢简洁、直奔主题。",mid:"沟通风格会根据对象调整，熟人直接，陌生人多铺垫。"},
-  openness:{high:"对新事物和新方法接受度高，愿意尝试有风险的方案。",low:"偏好成熟、经过验证的方法，对风险保持谨慎。",mid:"对创新持开放态度，但会根据具体情况判断是否采用。"},
-  neuroticism:{high:"对挫折比较敏感，需要得到肯定和方向确认。",low:"情绪稳定，面对挫折时更关注如何解决问题本身。",mid:"情绪状态可能有波动，不要假设用户已经ready解决问题。"},
-  agreeableness:{high:"习惯综合多方意见后再做决定，重视他人的看法。",low:"决策时更依赖自己的判断，较少参考他人意见。",mid:"有自己的判断，也会参考信任之人的意见。"},
+// 按场景的维度问题（每个场景4题）
+const SCENE_Q = {
+  writing: [
+    {badge:"写作风格",q:"你的写作风格更接近哪种？",opts:[
+      {t:"直接了当：开门见山，结论先行，不铺垫",v:"直接了当型"},
+      {t:"逻辑严密：分点论述，有论据有结论",v:"逻辑严密型"},
+      {t:"故事驱动：喜欢用案例、类比、场景来表达",v:"故事驱动型"},
+      {t:"简洁高效：能一句话说清的绝不用两句",v:"简洁高效型"},
+    ]},
+    {badge:"写作卡点",q:"你写东西时最常卡在哪一步？",opts:[
+      {t:"开头：不知道怎么起笔",v:"开头困难"},
+      {t:"结构：内容有了但组织不起来",v:"结构困难"},
+      {t:"措辞：想表达的和写出来的总是有差距",v:"措辞困难"},
+      {t:"不卡：基本能流畅写完",v:"不卡"},
+    ]},
+    {badge:"目标读者",q:"你的目标读者通常是？",opts:[
+      {t:"领导/上级：需要简洁有力，直击要点",v:"向上汇报"},
+      {t:"同事/平辈：需要清晰专业，便于协作",v:"同事协作"},
+      {t:"客户/外部：需要有说服力，注重语气",v:"对外沟通"},
+      {t:"大众/公开：需要通俗易懂，吸引注意力",v:"公众表达"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你写作？",opts:[
+      {t:"直接帮我写初稿，我再改",v:"写初稿"},
+      {t:"帮我列大纲和框架，我来填内容",v:"搭框架"},
+      {t:"帮我润色和改写已有的内容",v:"润色改写"},
+      {t:"给我灵感和角度，我自己写",v:"给灵感"},
+    ]},
+  ],
+  research: [
+    {badge:"学习方式",q:"你学习新东西的方式更接近？",opts:[
+      {t:"系统学习：从基础开始，按顺序往下走",v:"系统学习型"},
+      {t:"问题驱动：遇到问题再去找答案",v:"问题驱动型"},
+      {t:"实践为主：先动手做，边做边学",v:"实践驱动型"},
+      {t:"讨论碰撞：和别人讨论才能理解透彻",v:"讨论碰撞型"},
+    ]},
+    {badge:"研究瓶颈",q:"你做研究时最大的瓶颈是？",opts:[
+      {t:"信息太多，不知道哪个可信",v:"信息过载"},
+      {t:"信息太少，找不到关键资料",v:"信息不足"},
+      {t:"找到了但总结不出来",v:"总结困难"},
+      {t:"总结出来了但不知道怎么用",v:"落地困难"},
+    ]},
+    {badge:"呈现形式",q:"你希望研究结果以什么形式呈现？",opts:[
+      {t:"结构化报告：分点、有数据、有来源",v:"结构化报告"},
+      {t:"摘要速览：核心结论+关键数据",v:"摘要速览"},
+      {t:"对比分析：优劣对比、方案选择",v:"对比分析"},
+      {t:"深度长文：详细展开、有论证过程",v:"深度长文"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你研究？",opts:[
+      {t:"帮我搜集和整理资料，我来分析",v:"搜集整理"},
+      {t:"帮我直接出研究报告初稿",v:"出报告"},
+      {t:"帮我列出问题和框架，我去找答案",v:"搭框架"},
+      {t:"和我对话讨论，帮我理清思路",v:"对话讨论"},
+    ]},
+  ],
+  planning: [
+    {badge:"计划习惯",q:"你做计划的习惯是？",opts:[
+      {t:"精确到小时：每天每个时段都排满",v:"精确计划型"},
+      {t:"列优先级：今天最重要3件事",v:"优先级型"},
+      {t:"大方向：知道这周要做什么就行",v:"大方向型"},
+      {t:"随机应变：看心情和状态来决定",v:"随机应变型"},
+    ]},
+    {badge:"执行情况",q:"你的计划通常执行得怎么样？",opts:[
+      {t:"基本都能完成",v:"高执行力"},
+      {t:"完成60-80%，偶尔拖延",v:"中等执行力"},
+      {t:"经常半途而废",v:"执行困难"},
+      {t:"计划是计划，做是做",v:"分离型"},
+    ]},
+    {badge:"管理重点",q:"你目前最需要管理的是？",opts:[
+      {t:"工作任务：太多事情要做，排不过来",v:"任务管理"},
+      {t:"时间精力：总觉得时间不够用",v:"时间管理"},
+      {t:"财务收支：花钱没概念，想记账",v:"财务管理"},
+      {t:"习惯养成：想建立新习惯但坚持不了",v:"习惯管理"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你管理？",opts:[
+      {t:"帮我拆解任务，变成可执行的步骤",v:"拆解任务"},
+      {t:"定期提醒我，监督我的进度",v:"监督提醒"},
+      {t:"帮我分析数据，发现规律和问题",v:"数据分析"},
+      {t:"做我的 accountability partner",v:"互相督促"},
+    ]},
+  ],
+  coding: [
+    {badge:"技术水平",q:"你的技术水平？",opts:[
+      {t:"刚入门：在学第一门语言",v:"入门"},
+      {t:"初级：能写基本功能，但遇到复杂问题卡壳",v:"初级"},
+      {t:"中级：独立开发过项目，能解决大部分问题",v:"中级"},
+      {t:"高级：做架构设计和性能优化",v:"高级"},
+    ]},
+    {badge:"写码风格",q:"你写代码的风格？",opts:[
+      {t:"先写后改：先跑起来再说，后面再优化",v:"迭代型"},
+      {t:"先设计后写：想清楚再动手",v:"设计型"},
+      {t:"参考为主：看别人的代码改一改",v:"参考型"},
+      {t:"结果导向：能跑就行，不管优雅不优雅",v:"结果型"},
+    ]},
+    {badge:"解题方式",q:"你遇到技术问题时？",opts:[
+      {t:"先自己查文档和搜索引擎",v:"自学型"},
+      {t:"直接问AI，让它帮我定位",v:"AI辅助型"},
+      {t:"问同事或社区",v:"社区型"},
+      {t:"先跳过，做别的，过会儿再看",v:"跳过型"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你写代码？",opts:[
+      {t:"直接给我完整代码",v:"直接给代码"},
+      {t:"给我思路和伪代码，我来实现",v:"给思路"},
+      {t:"帮我review已有代码，找bug和优化点",v:"代码审查"},
+      {t:"和我讨论技术方案，不直接写代码",v:"技术讨论"},
+    ]},
+  ],
+  creative: [
+    {badge:"创作类型",q:"你的创意工作类型？",opts:[
+      {t:"文字创作：写公众号、小红书、文章、剧本",v:"文字创作"},
+      {t:"视觉设计：做图、做视频、做PPT",v:"视觉设计"},
+      {t:"产品策划：方案、活动、创意brainstorm",v:"产品策划"},
+      {t:"内容运营：日常发帖、选题、素材收集",v:"内容运营"},
+    ]},
+    {badge:"灵感来源",q:"你的创意灵感来源？",opts:[
+      {t:"观察生活：从日常细节中发现灵感",v:"观察生活型"},
+      {t:"大量输入：刷大量内容后自然涌现",v:"大量输入型"},
+      {t:"跨界联想：从不相关的领域找启发",v:"跨界联想型"},
+      {t:"需求驱动：有明确需求才开始创作",v:"需求驱动型"},
+    ]},
+    {badge:"创作瓶颈",q:"你在创意工作中最费时间的环节？",opts:[
+      {t:"想创意：有灵感但不确定方向对不对",v:"创意阶段"},
+      {t:"执行：想法清楚但做出来总是差一截",v:"执行阶段"},
+      {t:"迭代：第一版还行但不知道怎么优化",v:"迭代阶段"},
+      {t:"选题：每天都不知道今天写/做什么",v:"选题阶段"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你创作？",opts:[
+      {t:"帮我出完整初稿/初版，我再改",v:"出初版"},
+      {t:"帮我想创意和角度，我来执行",v:"想创意"},
+      {t:"帮我优化已有作品，提升质量",v:"优化作品"},
+      {t:"做我的创作搭档，一起头脑风暴",v:"头脑风暴"},
+    ]},
+  ],
+  daily: [
+    {badge:"聊天频率",q:"你平时和AI聊天的频率？",opts:[
+      {t:"每天都会聊，像日常习惯",v:"日常习惯"},
+      {t:"有需要才聊，遇到问题就问",v:"按需使用"},
+      {t:"偶尔聊聊，打发时间或探索新功能",v:"偶尔使用"},
+      {t:"刚开始用，还不确定怎么用",v:"新手"},
+    ]},
+    {badge:"生活状态",q:"你目前的生活状态？",opts:[
+      {t:"充实忙碌：工作生活都挺满",v:"充实忙碌"},
+      {t:"平淡日常：没什么大波澜",v:"平淡日常"},
+      {t:"有些迷茫：不太确定接下来要干什么",v:"有些迷茫"},
+      {t:"压力较大：正在经历一些挑战",v:"压力较大"},
+    ]},
+    {badge:"说话风格",q:"你希望AI怎么和你说话？",opts:[
+      {t:"像朋友：轻松随意，有来有往",v:"朋友式"},
+      {t:"像教练：给我方向和行动建议",v:"教练式"},
+      {t:"像树洞：我倾诉就好，不需要建议",v:"树洞式"},
+      {t:"像百科：问什么答什么，简洁准确",v:"百科式"},
+    ]},
+    {badge:"最希望的帮助",q:"你最希望AI帮你的是？",opts:[
+      {t:"解答生活中的小问题（吃什么/怎么选/哪里找）",v:"生活问答"},
+      {t:"帮我理清思路和情绪",v:"思路梳理"},
+      {t:"给我鼓励和正向反馈",v:"情绪支持"},
+      {t:"陪我聊天，打发孤独感",v:"陪伴聊天"},
+    ]},
+  ],
+  custom: [
+    {badge:"需求描述",q:"你主要用AI做什么？",type:"fill",placeholder:"用一句话描述你和AI的主要互动场景",examples:["帮我做用户调研和竞品分析","辅助我写论文和整理文献","帮我做数据分析和写报告","帮我写代码和调试程序","帮我做小红书/公众号内容策划","辅助我做产品需求分析","帮我管理家庭预算和日常开支","陪我聊天，帮我理清思路"]},
+    {badge:"交流风格",q:"你希望AI用什么风格和你交流？",opts:[
+      {t:"正式专业：逻辑严密、用词准确、像和专家对话",v:"正式专业"},
+      {t:"简洁高效：直击重点、不废话、像和同事快速对接",v:"简洁高效"},
+      {t:"轻松随意：像朋友聊天、有温度、可以开玩笑",v:"轻松随意"},
+      {t:"耐心引导：多问多确认、像老师带学生一样",v:"耐心引导"},
+    ]},
+    {badge:"特别要求",q:"有什么特别要求？",type:"fill",placeholder:"写下你希望AI遵守的规则或偏好，可以不填",examples:["避免使用英文缩写，用中文全称","涉及心理话题时不要下诊断，只给建议","优先用中国本土的案例和数据","回复后附上信息来源","不要主动追问，我问什么答什么","涉及健康问题时提醒我咨询专业医生","用emoji让回复更生动","不要用markdown格式"]},
+  ],
 };
 
-// 修复3：区分三种"简洁"
-const INSTRUCTIONS = {
-  conscientiousness:{high:"输出时先给框架和步骤，再给具体内容",mid:"输出时先给结论，再给框架，最后给内容",low:"输出时先给结论，再给推导过程"},
-  extraversion:{high:"适当加入回应性语言，在对话中建立连接感",mid:"根据话题节奏自然切换简洁和关系型沟通",low:"正式简洁——用最少的话传递最完整的信息，适合向上汇报场景"},
-  openness:{high:"多提供新思路和替代方案，不局限于最常规的答案",mid:"给出成熟方案但标注可选的新方向",low:"优先给出已验证的成熟方案，减少不确定的选项"},
-  neuroticism:{high:"反馈时先肯定再给建议，避免直接否定用户的判断",mid:"必要时先共情再分析，不需要过多情绪铺垫",low:"直接给出分析和建议，不需要过多情绪缓冲"},
-  agreeableness:{high:"适时征求用户意见，保持双向沟通节奏",mid:"给出判断后留一个征求意见的窗口",low:"尊重用户的独立判断，不要频繁追问'你觉得呢'"},
-};
+// ============================================================
+// 状态
+// ============================================================
+let step = 0;  // 0=birth, 1=scenario, 2-5=scene_q, 6=done
+let sceneId = null;
+let birth = {};
+let sceneAnswers = [];
 
-const SECTIONS = [
-  {name:"人生轨迹", q:LIFE_Q, color:"s1", nid:"life_", key:"life"},
-  {name:"性格画像", q:PERSONALITY_Q, color:"s2", nid:"pers_", key:"pers"},
-  {name:"Agent 定制", q:AGENT_Q, color:"s3", nid:"ag_", key:"ag"},
-];
-
-let sec = 0; let qi = 0;
-let answers = [[], [], []];
-let agCustom = "";
-
+// ============================================================
+// 渲染
+// ============================================================
 function render() {
-  if (sec >= 3) { showResult(); return; }
-  const s = SECTIONS[sec];
-  const q = s.q[qi];
-  const isFill = q.type === "fill";
-  const cls = s.color;
-  document.querySelectorAll(".section-step").forEach((el, i) => {
-    el.className = "section-step";
-    if (i < sec) el.classList.add("done", SECTIONS[i].color);
-    if (i === sec && qi === s.q.length - 1) el.classList.add("done", s.color);
-  });
-  const total = s.q.length;
-  const counter = isFill ? `第 ${qi+1}/${total} 题` : `第 ${qi+1}/${total} 题（点击选项自动跳转下一题）`;
-  const optsHTML = isFill ? "" : q.opts.map((o, i) => {
-    const picked = answers[sec][qi] !== undefined && answers[sec][qi] !== null &&
-      (s.key==="pers" ? answers[sec][qi].s === o.s : answers[sec][qi].v === o.v);
-    return `<div class="opt${picked?' picked '+cls:''}" onclick="pick(${i})">${o.t}</div>`;
-  }).join("");
-  const fillHTML = isFill ? `<textarea class="fill-input" id="fillInput" placeholder="${q.placeholder||''}" oninput="agCustom=this.value">${agCustom||''}</textarea>` : "";
-  const backBtn = (qi > 0)
-    ? `<button class="btn btn-back" onclick="prev()">← 上一题</button>`
-    : (sec > 0 ? `<button class="btn btn-back" onclick="prevSection()">← ${SECTIONS[sec-1].name}</button>` : `<span></span>`);
-  const nextBtn = isFill
-    ? `<button class="btn btn-next ${cls}" onclick="next()">${qi===total-1?'生成画像 ✨':'下一题 →'}</button>`
-    : "";
-  const skipBtn = !isFill && qi < total - 1
-    ? `<span class="btn-skip" onclick="skip()">跳过此题</span>`
-    : "";
-  document.getElementById("card").innerHTML = `
-    <div class="badge ${cls}">${s.name} · ${q.badge}</div>
-    <div class="q-counter">${counter}</div>
-    <div class="q-title">${q.q}</div>
-    ${optsHTML}
-    ${fillHTML}
+  // Progress: 5步（出生3合1 + 场景1 + 维度4）
+  const totalSteps = 2 + 4;
+  let dots = '';
+  for(let i=0;i<totalSteps;i++){
+    const cls = i<step ? 'done' : '';
+    const s2 = (i>=1) ? ' s2' : '';
+    dots += `<div class="progress-dot${cls}${s2}"></div>`;
+  }
+  document.getElementById('progress').innerHTML = dots;
+
+  if(step===0) renderBirth();
+  else if(step===1) renderScenario();
+  else if(step>=2 && step<=5) renderSceneQ(step-2);
+  else showResult();
+}
+
+function renderBirth(){
+  const q = BIRTH_Q;
+  const yearVal = birth.year || '';
+  const monthVal = birth.month || '';
+  const dayVal = birth.day || '';
+  const hourVal = birth.hour || '';
+  const genderVal = birth.gender || '';
+  document.getElementById('card').innerHTML = `
+    <div class="badge s1">出生信息（选填）</div>
+    <div class="q-label">第 1 步 · 可直接跳过</div>
+    <div class="privacy-note">
+      📌 <b>填写原因：</b>出生信息用于生成你的命盘快照，帮助AI理解你当前所处的人生阶段和性格基调。<br>
+      🔒 <b>隐私说明：</b>信息仅在本地处理，不会上传或存储到任何服务器。跳过后画像仍会通过场景维度问题生成。
+    </div>
+    <div class="options" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div><label style="color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px">出生年份</label><input type="number" id="bYear" placeholder="如 1995" value="${yearVal}" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem" oninput="birth.year=this.value"></div>
+      <div><label style="color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px">出生月份</label><select id="bMonth" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem" onchange="birth.month=this.value"><option value="">选择</option>${['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'].map((m,i)=>`<option value="${i+1}"${birth.month==i+1?' selected':''}>${m}</option>`).join('')}</select></div>
+      <div><label style="color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px">出生日</label><input type="number" id="bDay" placeholder="1-31" min="1" max="31" value="${dayVal}" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem" oninput="birth.day=this.value"></div>
+      <div><label style="color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px">出生时辰</label><select id="bHour" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem" onchange="birth.hour=this.value">${BIRTH_Q[3].options.map((h,i)=>`<option value="${i}"${birth.hour==i?' selected':''}>${h}</option>`).join('')}</select></div>
+    </div>
+    <div style="margin-bottom:8px"><label style="color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px">性别（影响大限顺逆排法）</label><select id="bGender" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem" onchange="birth.gender=this.value"><option value="">不填</option><option value="男"${birth.gender==='男'?' selected':''}>男</option><option value="女"${birth.gender==='女'?' selected':''}>女</option></select></div>
     <div class="nav">
-      ${backBtn}
-      ${skipBtn}
-      ${nextBtn}
+      <span></span>
+      <span class="btn-skip" onclick="step=1;render()">跳过出生信息 →</span>
+      <button class="btn btn-next" onclick="step=1;render()">下一步 →</button>
     </div>
   `;
-  if (isFill) document.getElementById("fillInput")?.focus();
-  document.getElementById("result").classList.remove("visible");
 }
 
-function pick(idx) {
-  const s = SECTIONS[sec];
-  const q = s.q[qi];
-  if (s.key === "pers") answers[sec][qi] = {s: q.opts[idx].s};
-  else answers[sec][qi] = {v: q.opts[idx].v};
-  next();
+function renderScenario(){
+  document.getElementById('card').innerHTML = `
+    <div class="badge s2">场景选择</div>
+    <div class="q-label">第 2 步 · 选择最贴近的使用场景</div>
+    <div class="q-title">你主要用 AI 做什么？<br><span style="font-size:0.85rem;color:var(--sub);font-weight:400">我们会根据你的选择只问相关的问题</span></div>
+    <div class="options">${SCENARIOS.map((s,i)=>
+      `<div class="opt${sceneId===s.id?' picked':''}" onclick="selectScenario('${s.id}')">${s.label}<br><span style="font-size:0.8rem;color:var(--sub)">${s.desc}</span></div>`
+    ).join('')}</div>
+    <div class="nav">
+      <button class="btn btn-back" onclick="step=0;render()">← 出生信息</button>
+      <span></span>
+      <span></span>
+    </div>
+  `;
 }
 
-function next() {
-  const s = SECTIONS[sec];
-  if (qi < s.q.length - 1) { qi++; }
-  else { qi = 0; sec++; }
+function selectScenario(id){
+  sceneId = id;
+  sceneAnswers = [];
+  step = 2;
   render();
 }
 
-function prev() {
-  if (qi > 0) qi--;
-  else { sec--; qi = SECTIONS[sec].q.length - 1; }
+function renderSceneQ(idx){
+  const qs = SCENE_Q[sceneId];
+  if(!qs||idx>=qs.length){showResult();return}
+  const q = qs[idx];
+  const isFill = q.type==='fill';
+  document.getElementById('card').innerHTML = `
+    <div class="badge s2">${q.badge}</div>
+    <div class="q-label">第 ${idx+3} 步 · 第 ${idx+1}/${qs.length} 题（点击选项自动跳转）</div>
+    <div class="q-title">${q.q}</div>
+    ${isFill ? `
+      <textarea class="fill-input" id="fillInput" placeholder="${q.placeholder||''}" oninput="sceneAnswers[${idx}]=this.value">${sceneAnswers[idx]||''}</textarea>
+      ${q.examples?`<div class="fill-hint">💡 参考：${q.examples.map(e=>'"'+e+'"').join('、')}</div>`:''}
+    ` : `
+      <div class="options">${q.opts.map((o,i)=>
+        `<div class="opt${sceneAnswers[idx]===i?' picked':''}" onclick="sceneAnswers[${idx}]=${i};nextSceneQ()">${o.t}</div>`
+      ).join('')}</div>
+    `}
+    <div class="nav">
+      <button class="btn btn-back" onclick="prevSceneQ(${idx})">← 上一题</button>
+      ${!isFill && idx<qs.length-1 ? `<span class="btn-skip" onclick="sceneAnswers[${idx}]=-1;nextSceneQ()">跳过</span>` : ''}
+      ${isFill ? `<button class="btn btn-next" onclick="nextSceneQ()">${idx===qs.length-1?'生成画像 ✨':'下一题 →'}</button>` : ''}
+    </div>
+  `;
+  if(isFill) document.getElementById('fillInput')?.focus();
+}
+
+function nextSceneQ(){
+  step++;
+  render();
+}
+function prevSceneQ(idx){
+  if(step>2) step--;
+  else {step=1;sceneId=null}
   render();
 }
 
-function prevSection() {
-  sec--;
-  qi = SECTIONS[sec].q.length - 1;
-  render();
-}
+// ============================================================
+// 生成画像
+// ============================================================
+function buildPrompt(){
+  const qs = SCENE_Q[sceneId];
+  const scene = SCENARIOS.find(s=>s.id===sceneId);
+  const sceneLabel = scene?scene.label:'未选择';
 
-function skip() { next(); }
-
-// 修复4+5+6：出生信息标注 + 画像D完整结构
-function buildFinalPrompt() {
-  const L = LIFE_Q, P = PERSONALITY_Q, A = AGENT_Q;
-  const la = answers[0], pa = answers[1], aa = answers[2];
-  const gv = (arr, i) => (arr[i] && arr[i].v) || "未填写";
-
-  let ming = gv(la, 0), shen = gv(la, 1), migr = gv(la, 2);
-
-  let scores = {};
-  P.forEach((_, i) => { scores[_.badge] = (pa[i] && pa[i].s !== undefined) ? pa[i].s : 0.5; });
-
-  let desc = [];
-  let dims = ["conscientiousness","extraversion","openness","neuroticism","agreeableness"];
-  dims.forEach((d,i) => {
-    let v = scores[P[i].badge];
-    if (v>=0.7) desc.push(LABELS[d].high); else if (v<=0.3) desc.push(LABELS[d].low); else desc.push(LABELS[d].mid);
+  // 收集维度答案
+  let dims = [];
+  qs.forEach((q,i)=>{
+    const a = sceneAnswers[i];
+    if(a===undefined||a===null||a===-1) dims.push({badge:q.badge,val:'未填写'});
+    else if(typeof a==='string') dims.push({badge:q.badge,val:a});
+    else dims.push({badge:q.badge,val:q.opts[a].v,q:q.q,a:q.opts[a].t});
   });
-  let inst = [];
-  dims.forEach((d,i) => {
-    let v = scores[P[i].badge];
-    if (v>=0.7) inst.push(`- ${INSTRUCTIONS[d].high}`); else if (v<=0.3) inst.push(`- ${INSTRUCTIONS[d].low}`); else inst.push(`- ${INSTRUCTIONS[d].mid}`);
-  });
 
-  let use = gv(aa, 0), tone = gv(aa, 1), len = gv(aa, 2);
-  let lenInst = len==="简短" ? "回复尽量简短精炼，一两句话说清。" : (len==="详细" ? "回复可以详尽全面，多角度分析，分点展开。" : "回复长度适中，一段话讲清楚，有要点有分析。");
-  let toneInst = tone==="正式专业" ? "语气正式专业，逻辑严密，减少口语化表达。" : (tone==="简洁高效" ? "语气简洁高效，直击重点。" : "语气轻松随意，像朋友一样交流，适当加入情感表达。");
-  let useInst = {"工作助手":"你是一个工作助手，专注于文档撰写、数据分析、项目管理等任务。","个人教练":"你是一个个人教练，帮助用户进行学习规划、习惯养成和情绪支持。","日常陪伴":"你是一个日常对话伙伴，提供陪伴、闲聊和生活疑惑解答。","专业工具":"你是一个专业工具型 agent，专注于编程、设计、研究等技能领域的深度协助。"}[use] || "你是一个 AI 助手。";
-  let customBlock = agCustom ? `\n### 用户特别要求\n${agCustom}\n` : "";
+  // 出生信息
+  let birthLine = [];
+  if(birth.year) birthLine.push(`${birth.year}年`);
+  if(birth.month) birthLine.push(`${birth.month}月`);
+  if(birth.day) birthLine.push(`${birth.day}日`);
+  if(birth.hour && birth.hour!=='0') birthLine.push(BIRTH_Q[3].options[parseInt(birth.hour)]);
+  if(birth.gender) birthLine.push(`· ${birth.gender}`);
+  const birthStr = birthLine.length?birthLine.join(''):'未填写';
+  const hasBirth = birth.year && birth.month && birth.day;
 
-  // 修复4：出生信息标注（暂不收集，预留接口）
-  let birthNote = "- 出生信息：未收集（命盘时间轴功能开发中，暂不影响画像质量）";
-
-  return `# ${useInst}
+  // 组装
+  let prompt = `# AI 画像 · ${sceneLabel}
 
 ## 用户背景
-${birthNote}
-- 性格基调：${ming}
-- 当前焦点：${shen}
-- 对外风格：${migr}
+- 出生信息：${birthStr}${hasBirth?'':'（命盘快照功能开发中）'}
+- 使用场景：${sceneLabel}
 
-## 沟通偏好
-${desc.join("")}
-
-### 适配指令
-${inst.join("\n")}
-
-## Agent 行为准则
-- ${toneInst}
-- ${lenInst}${customBlock}
----
-> 本画像由 Warmstart v0.3.3 生成，可复制到任何 AI 的 system prompt 中直接使用。
 `;
+
+  // 维度
+  dims.forEach(d=>{
+    prompt += `## ${d.badge}\n${d.val}\n\n`;
+  });
+
+  prompt += `---
+> 本画像由 Warmstart v0.4.0 生成，复制到任何 AI 的 system prompt 中即可生效。
+`;
+
+  return prompt;
 }
 
-function showResult() {
-  document.getElementById("card").innerHTML = "";
-  document.getElementById("promptBox").textContent = buildFinalPrompt();
-  document.getElementById("result").classList.add("visible");
-  document.getElementById("result").scrollIntoView({behavior:"smooth"});
-  document.querySelectorAll(".section-step").forEach(el => { el.classList.add("done"); });
+function showResult(){
+  document.getElementById('card').innerHTML = '';
+  document.getElementById('promptBox').textContent = buildPrompt();
+  document.getElementById('result').classList.add('visible');
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.progress-dot').forEach(el=>el.classList.add('done'));
 }
 
-async function copyPrompt() {
-  const t = document.getElementById("promptBox").textContent;
-  try { await navigator.clipboard.writeText(t); }
-  catch { const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta); }
-  showToast("✅ 已复制！粘贴到任何 AI 的 system prompt 中即可");
+async function copyPrompt(){
+  const t = document.getElementById('promptBox').textContent;
+  try{await navigator.clipboard.writeText(t)}
+  catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
+  showToast('✅ 已复制！粘贴到任何 AI 的 system prompt 中即可');
 }
 
-function resetAll() {
-  sec=0; qi=0; answers=[[],[],[]]; agCustom="";
-  document.getElementById("result").classList.remove("visible");
-  document.querySelectorAll(".section-step").forEach(el => { el.className="section-step"; });
+function resetAll(){
+  step=0;sceneId=null;birth={};sceneAnswers=[];
+  document.getElementById('result').classList.remove('visible');
   render();
 }
-function showToast(msg) { const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),2500); }
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
 render();
 </script>
 </body>
