@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warmstart — 场景智能画像</title>
+<style>
+  :root{--bg:#0f1117;--card:#1a1d27;--border:#2a2d3a;--text:#e1e4eb;--sub:#8b8fa3;--a1:#7c5cfc;--a2:#f59e0b;--a3:#10b981;--radius:14px}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;min-height:100vh;display:flex;justify-content:center}
+  .container{max-width:640px;width:100%;padding:30px 20px}
+  .header{text-align:center;margin-bottom:16px}
+  .header h1{font-size:1.6rem;font-weight:700}
+  .header p{color:var(--sub);font-size:0.9rem;margin-top:4px}
+  .progress{display:flex;gap:4px;margin-bottom:24px}
+  .progress-dot{flex:1;height:4px;background:var(--border);border-radius:4px;transition:background 0.3s}
+  .progress-dot.done{background:var(--a1)}
+  .progress-dot.done.s2{background:var(--a2)}
+  .progress-dot.done.s3{background:var(--a3)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px 24px;animation:fadeIn 0.3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;margin-bottom:14px}
+  .badge.s1{background:rgba(124,92,252,0.12);color:var(--a1)}
+  .badge.s2{background:rgba(245,158,11,0.12);color:var(--a2)}
+  .badge.s3{background:rgba(16,185,129,0.12);color:var(--a3)}
+  .q-label{color:var(--sub);font-size:0.8rem;margin-bottom:12px}
+  .q-title{font-size:1.1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
+  .privacy-note{color:var(--sub);font-size:0.78rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.6}
+  .privacy-note b{color:var(--a1)}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+  .form-grid label{color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px}
+  .form-grid input,.form-grid select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem}
+  .form-grid input:focus,.form-grid select:focus{outline:none;border-color:var(--a1)}
+  .options{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+  .opt{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s;font-size:0.9rem;line-height:1.5}
+  .opt:hover{border-color:var(--a1)}
+  .opt.picked{border-color:var(--a1);background:rgba(124,92,252,0.06)}
+  .opt.picked::after{content:" ✓";float:right;font-weight:700;color:var(--a1)}
+  .fill-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-size:0.9rem;font-family:inherit;resize:vertical;min-height:90px;margin-bottom:24px}
+  .fill-input:focus{outline:none;border-color:var(--a3)}
+  .fill-hint{color:var(--sub);font-size:0.78rem;background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:20px;line-height:1.6}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .btn{padding:11px 24px;border-radius:10px;border:none;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+  .btn-next{background:var(--a1);color:#fff}.btn-next:hover{opacity:0.9}
+  .btn-next.s2{background:var(--a2)}.btn-next.s3{background:var(--a3)}
+  .btn-back{background:transparent;color:var(--sub);border:1px solid var(--border)}
+  .btn-back:hover{border-color:var(--a1);color:var(--text)}
+  .btn-skip{background:transparent;color:var(--sub);font-size:0.8rem;cursor:pointer}
+  .btn-skip:hover{color:var(--text)}
+  .result{display:none;animation:fadeIn 0.5s ease}.result.visible{display:block}
+  .result h2{text-align:center;margin-bottom:14px;font-size:1.2rem}
+  .prompt-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;font-family:'SF Mono','Fira Code',monospace;font-size:0.82rem;line-height:1.8;white-space:pre-wrap;word-break:break-word;max-height:500px;overflow-y:auto;margin-bottom:18px}
+  .actions{display:flex;gap:12px}
+  .btn-copy{background:var(--a3);color:#fff}.btn-copy:hover{opacity:0.9}
+  .btn-reset{background:var(--card);color:var(--text);border:1px solid var(--border)}
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--a1);color:#fff;padding:12px 28px;border-radius:10px;font-weight:600;font-size:0.9rem;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:100}
+  .toast.show{opacity:1}
+  .footer{text-align:center;margin-top:32px;color:var(--sub);font-size:0.76rem}
+  .footer a{color:var(--a1);text-decoration:none}
+  @media(max-width:500px){.container{padding:18px 12px}.card{padding:20px 16px}.actions{flex-direction:column}.btn{width:100%;text-align:center}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🧭 Warmstart</h1>
+    <p>选择场景 → 回答 12 题 → 任何 AI 第一次对话就认识你</p>
+  </div>
+  <div class="progress" id="progress"></div>
+  <div class="card" id="card"></div>
+  <div class="result" id="result">
+    <h2>✅ 你的专属 AI 画像</h2>
+    <p style="text-align:center;color:var(--sub);margin-bottom:14px">复制到任何 AI 的 system prompt 中即可生效</p>
+    <div class="prompt-box" id="promptBox"></div>
+    <div class="actions">
+      <button class="btn btn-copy" onclick="copyPrompt()">📋 复制画像</button>
+      <button class="btn btn-reset" onclick="resetAll()">🔄 重新开始</button>
+    </div>
+  </div>
+  <div class="footer">
+    <a href="https://github.com/diandian1001/warmstart" target="_blank">GitHub</a> · MIT · v0.5.0
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+// ============================================================
+// 出生信息
+// ============================================================
+const BIRTH_FIELDS = [
+  {id:"year",label:"出生年份",type:"number",placeholder:"如 1995"},
+  {id:"month",label:"出生月份",type:"select",options:["","1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]},
+  {id:"day",label:"出生日",type:"number",placeholder:"1-31"},
+  {id:"hour",label:"出生时辰",type:"select",options:["未知","子时(23-1点)","丑时(1-3)","寅时(3-5)","卯时(5-7)","辰时(7-9)","巳时(9-11)","午时(11-13)","未时(13-15)","申时(15-17)","酉时(17-19)","戌时(19-21)","亥时(21-23)"]},
+  {id:"gender",label:"性别",type:"select",options:["","男","女"]},
+  {id:"mbti",label:"MBTI（选填）",type:"select",options:["","INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"],hint:"如果做过MBTI测试可以填，不知道可以跳过"},
+];
+
+const MBTI_MAP = {
+  INTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
+  INTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+  ENTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
+  ENTP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+  INFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
+  INFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+  ENFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
+  ENFP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+  ISTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
+  ISFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
+  ESTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
+  ESFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
+  ISTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+  ISFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+  ESTP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+  ESFP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+};
+
+// ============================================================
+// 场景选择
+// ============================================================
+const SCENARIOS = [
+  {id:"writing",  label:"📝 写作与表达", desc:"写邮件、报告、文案、改写润色、翻译"},
+  {id:"research", label:"🔍 研究与学习", desc:"查资料、学技能、整理笔记、做调研"},
+  {id:"planning", label:"📊 规划与管理", desc:"待办事项、日程安排、项目管理、财务规划"},
+  {id:"coding",   label:"💻 技术与编程", desc:"写代码、调试、学编程、技术方案"},
+  {id:"creative", label:"🎨 创意与设计", desc:"做图、做视频、写内容、做PPT、头脑风暴"},
+  {id:"daily",    label:"💬 日常与陪伴", desc:"闲聊、问答、健康咨询、生活建议"},
+  {id:"custom",   label:"⚙️ 自定义",    desc:"我的需求比较特殊，自己描述"},
+];
+
+// ============================================================
+// 通用维度（5题，场景选择后、场景问题前）
+// ============================================================
+const UNIVERSAL_Q = [
+  {badge:"回复语言",q:"你希望AI用什么语言回复你？",opts:[
+    {t:"中文（简体）",v:"简体中文"},
+    {t:"中文（繁体）",v:"繁体中文"},
+    {t:"英文",v:"English"},
+    {t:"中英混合，专业术语用英文",v:"中英混合"},
+  ]},
+  {badge:"反馈风格",q:"当你的想法有明显问题时，你希望AI怎么做？",opts:[
+    {t:"直接指出问题，不用绕弯",v:"直接纠正型"},
+    {t:"先肯定好的部分，再温和指出问题",v:"先肯定后纠正型"},
+    {t:"不主动挑错，除非我问你",v:"被动型"},
+    {t:"委婉暗示，让我自己发现",v:"引导发现型"},
+  ]},
+  {badge:"回复长度",q:"你偏好什么样的回复详细程度？",opts:[
+    {t:"简短精炼，一两句话说清",v:"简短型"},
+    {t:"适中，一段话有要点有分析",v:"适中型"},
+    {t:"详细全面，多角度分析",v:"详细型"},
+    {t:"看情况，简单问题简答，复杂问题详答",v:"自适应型"},
+  ]},
+  {badge:"任务聚焦",q:"当你同时有多个任务线时，你希望AI怎么做？",opts:[
+    {t:"提醒我聚焦，超过3条就主动提示",v:"主动聚焦型"},
+    {t:"帮我理清优先级，但不强制聚焦",v:"辅助排序型"},
+    {t:"随我切换，不主动干预",v:"随性型"},
+    {t:"帮我同时管理多条线",v:"多线管理型"},
+  ]},
+  {badge:"AI角色",q:"你希望AI在你的生活中扮演什么角色？",opts:[
+    {t:"高效工具：问什么答什么，不主动延伸",v:"工具型"},
+    {t:"思考伙伴：帮我分析、质疑、拓展思路",v:"伙伴型"},
+    {t:"执行助手：帮我直接完成任务",v:"助手型"},
+    {t:"成长教练：推动我学习和进步",v:"教练型"},
+  ]},
+];
+
+// ============================================================
+// 场景维度问题（每场景4题）
+// ============================================================
+const SCENE_Q = {
+  writing: [
+    {badge:"写作风格",q:"你的写作风格更接近哪种？",opts:[
+      {t:"直接了当：开门见山，结论先行，不铺垫",v:"直接了当型"},
+      {t:"逻辑严密：分点论述，有论据有结论",v:"逻辑严密型"},
+      {t:"故事驱动：喜欢用案例、类比、场景来表达",v:"故事驱动型"},
+      {t:"简洁高效：能一句话说清的绝不用两句",v:"简洁高效型"},
+    ]},
+    {badge:"写作卡点",q:"你写东西时最常卡在哪一步？",opts:[
+      {t:"开头：不知道怎么起笔",v:"开头困难"},
+      {t:"结构：内容有了但组织不起来",v:"结构困难"},
+      {t:"措辞：想表达的和写出来的总是有差距",v:"措辞困难"},
+      {t:"不卡：基本能流畅写完",v:"不卡"},
+    ]},
+    {badge:"目标读者",q:"你的目标读者通常是？",opts:[
+      {t:"领导/上级：需要简洁有力，直击要点",v:"向上汇报"},
+      {t:"同事/平辈：需要清晰专业，便于协作",v:"同事协作"},
+      {t:"客户/外部：需要有说服力，注重语气",v:"对外沟通"},
+      {t:"大众/公开：需要通俗易懂，吸引注意力",v:"公众表达"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你写作？",opts:[
+      {t:"直接帮我写初稿，我再改",v:"写初稿"},
+      {t:"帮我列大纲和框架，我来填内容",v:"搭框架"},
+      {t:"帮我润色和改写已有的内容",v:"润色改写"},
+      {t:"给我灵感和角度，我自己写",v:"给灵感"},
+    ]},
+  ],
+  research: [
+    {badge:"学习方式",q:"你学习新东西的方式更接近？",opts:[
+      {t:"系统学习：从基础开始，按顺序往下走",v:"系统学习型"},
+      {t:"问题驱动：遇到问题再去找答案",v:"问题驱动型"},
+      {t:"实践为主：先动手做，边做边学",v:"实践驱动型"},
+      {t:"讨论碰撞：和别人讨论才能理解透彻",v:"讨论碰撞型"},
+    ]},
+    {badge:"研究瓶颈",q:"你做研究时最大的瓶颈是？",opts:[
+      {t:"信息太多，不知道哪个可信",v:"信息过载"},
+      {t:"信息太少，找不到关键资料",v:"信息不足"},
+      {t:"找到了但总结不出来",v:"总结困难"},
+      {t:"总结出来了但不知道怎么用",v:"落地困难"},
+    ]},
+    {badge:"呈现形式",q:"你希望研究结果以什么形式呈现？",opts:[
+      {t:"结构化报告：分点、有数据、有来源",v:"结构化报告"},
+      {t:"摘要速览：核心结论+关键数据",v:"摘要速览"},
+      {t:"对比分析：优劣对比、方案选择",v:"对比分析"},
+      {t:"深度长文：详细展开、有论证过程",v:"深度长文"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你研究？",opts:[
+      {t:"帮我搜集和整理资料，我来分析",v:"搜集整理"},
+      {t:"帮我直接出研究报告初稿",v:"出报告"},
+      {t:"帮我列出问题和框架，我去找答案",v:"搭框架"},
+      {t:"和我对话讨论，帮我理清思路",v:"对话讨论"},
+    ]},
+  ],
+  planning: [
+    {badge:"计划习惯",q:"你做计划的习惯是？",opts:[
+      {t:"精确到小时：每天每个时段都排满",v:"精确计划型"},
+      {t:"列优先级：今天最重要3件事",v:"优先级型"},
+      {t:"大方向：知道这周要做什么就行",v:"大方向型"},
+      {t:"随机应变：看心情和状态来决定",v:"随机应变型"},
+    ]},
+    {badge:"执行情况",q:"你的计划通常执行得怎么样？",opts:[
+      {t:"基本都能完成",v:"高执行力"},
+      {t:"完成60-80%，偶尔拖延",v:"中等执行力"},
+      {t:"经常半途而废",v:"执行困难"},
+      {t:"计划是计划，做是做",v:"分离型"},
+    ]},
+    {badge:"管理重点",q:"你目前最需要管理的是？",opts:[
+      {t:"工作任务：太多事情要做，排不过来",v:"任务管理"},
+      {t:"时间精力：总觉得时间不够用",v:"时间管理"},
+      {t:"财务收支：花钱没概念，想记账",v:"财务管理"},
+      {t:"习惯养成：想建立新习惯但坚持不了",v:"习惯管理"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你管理？",opts:[
+      {t:"帮我拆解任务，变成可执行的步骤",v:"拆解任务"},
+      {t:"定期提醒我，监督我的进度",v:"监督提醒"},
+      {t:"帮我分析数据，发现规律和问题",v:"数据分析"},
+      {t:"做我的 accountability partner",v:"互相督促"},
+    ]},
+  ],
+  coding: [
+    {badge:"技术水平",q:"你的技术水平？",opts:[
+      {t:"刚入门：在学第一门语言",v:"入门"},
+      {t:"初级：能写基本功能，但遇到复杂问题卡壳",v:"初级"},
+      {t:"中级：独立开发过项目，能解决大部分问题",v:"中级"},
+      {t:"高级：做架构设计和性能优化",v:"高级"},
+    ]},
+    {badge:"写码风格",q:"你写代码的风格？",opts:[
+      {t:"先写后改：先跑起来再说，后面再优化",v:"迭代型"},
+      {t:"先设计后写：想清楚再动手",v:"设计型"},
+      {t:"参考为主：看别人的代码改一改",v:"参考型"},
+      {t:"结果导向：能跑就行，不管优雅不优雅",v:"结果型"},
+    ]},
+    {badge:"解题方式",q:"你遇到技术问题时？",opts:[
+      {t:"先自己查文档和搜索引擎",v:"自学型"},
+      {t:"直接问AI，让它帮我定位",v:"AI辅助型"},
+      {t:"问同事或社区",v:"社区型"},
+      {t:"先跳过，做别的，过会儿再看",v:"跳过型"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你写代码？",opts:[
+      {t:"直接给我完整代码",v:"直接给代码"},
+      {t:"给我思路和伪代码，我来实现",v:"给思路"},
+      {t:"帮我review已有代码，找bug和优化点",v:"代码审查"},
+      {t:"和我讨论技术方案，不直接写代码",v:"技术讨论"},
+    ]},
+  ],
+  creative: [
+    {badge:"创作类型",q:"你的创意工作类型？",opts:[
+      {t:"文字创作：写公众号、小红书、文章、剧本",v:"文字创作"},
+      {t:"视觉设计：做图、做视频、做PPT",v:"视觉设计"},
+      {t:"产品策划：方案、活动、创意brainstorm",v:"产品策划"},
+      {t:"内容运营：日常发帖、选题、素材收集",v:"内容运营"},
+    ]},
+    {badge:"灵感来源",q:"你的创意灵感来源？",opts:[
+      {t:"观察生活：从日常细节中发现灵感",v:"观察生活型"},
+      {t:"大量输入：刷大量内容后自然涌现",v:"大量输入型"},
+      {t:"跨界联想：从不相关的领域找启发",v:"跨界联想型"},
+      {t:"需求驱动：有明确需求才开始创作",v:"需求驱动型"},
+    ]},
+    {badge:"创作瓶颈",q:"你在创意工作中最费时间的环节？",opts:[
+      {t:"想创意：有灵感但不确定方向对不对",v:"创意阶段"},
+      {t:"执行：想法清楚但做出来总是差一截",v:"执行阶段"},
+      {t:"迭代：第一版还行但不知道怎么优化",v:"迭代阶段"},
+      {t:"选题：每天都不知道今天写/做什么",v:"选题阶段"},
+    ]},
+    {badge:"AI帮法",q:"希望AI怎么帮你创作？",opts:[
+      {t:"帮我出完整初稿/初版，我再改",v:"出初版"},
+      {t:"帮我想创意和角度，我来执行",v:"想创意"},
+      {t:"帮我优化已有作品，提升质量",v:"优化作品"},
+      {t:"做我的创作搭档，一起头脑风暴",v:"头脑风暴"},
+    ]},
+  ],
+  daily: [
+    {badge:"聊天频率",q:"你平时和AI聊天的频率？",opts:[
+      {t:"每天都会聊，像日常习惯",v:"日常习惯"},
+      {t:"有需要才聊，遇到问题就问",v:"按需使用"},
+      {t:"偶尔聊聊，打发时间或探索新功能",v:"偶尔使用"},
+      {t:"刚开始用，还不确定怎么用",v:"新手"},
+    ]},
+    {badge:"生活状态",q:"你目前的生活状态？",opts:[
+      {t:"充实忙碌：工作生活都挺满",v:"充实忙碌"},
+      {t:"平淡日常：没什么大波澜",v:"平淡日常"},
+      {t:"有些迷茫：不太确定接下来要干什么",v:"有些迷茫"},
+      {t:"压力较大：正在经历一些挑战",v:"压力较大"},
+    ]},
+    {badge:"说话风格",q:"你希望AI怎么和你说话？",opts:[
+      {t:"像朋友：轻松随意，有来有往",v:"朋友式"},
+      {t:"像教练：给我方向和行动建议",v:"教练式"},
+      {t:"像树洞：我倾诉就好，不需要建议",v:"树洞式"},
+      {t:"像百科：问什么答什么，简洁准确",v:"百科式"},
+    ]},
+    {badge:"最希望的帮助",q:"你最希望AI帮你的是？",opts:[
+      {t:"解答生活中的小问题（吃什么/怎么选/哪里找）",v:"生活问答"},
+      {t:"帮我理清思路和情绪",v:"思路梳理"},
+      {t:"给我鼓励和正向反馈",v:"情绪支持"},
+      {t:"陪我聊天，打发孤独感",v:"陪伴聊天"},
+    ]},
+  ],
+  custom: [
+    {badge:"需求描述",q:"你主要用AI做什么？",type:"fill",placeholder:"用一句话描述你和AI的主要互动场景",examples:["帮我做用户调研和竞品分析","辅助我写论文和整理文献","帮我做数据分析和写报告","帮我写代码和调试程序","帮我做小红书/公众号内容策划","辅助我做产品需求分析","帮我管理家庭预算和日常开支","陪我聊天，帮我理清思路"]},
+    {badge:"交流风格",q:"你希望AI用什么风格和你交流？",opts:[
+      {t:"正式专业：逻辑严密、用词准确、像和专家对话",v:"正式专业"},
+      {t:"简洁高效：直击重点、不废话、像和同事快速对接",v:"简洁高效"},
+      {t:"轻松随意：像朋友聊天、有温度、可以开玩笑",v:"轻松随意"},
+      {t:"耐心引导：多问多确认、像老师带学生一样",v:"耐心引导"},
+    ]},
+    {badge:"特别要求",q:"有什么特别要求？",type:"fill",placeholder:"写下你希望AI遵守的规则或偏好，可以不填",examples:["避免使用英文缩写，用中文全称","涉及心理话题时不要下诊断，只给建议","优先用中国本土的案例和数据","回复后附上信息来源","不要主动追问，我问什么答什么","涉及健康问题时提醒我咨询专业医生","用emoji让回复更生动","不要用markdown格式"]},
+  ],
+};
+
+// ============================================================
+// 状态
+// ============================================================
+let step = 0;  // 0=birth, 1=scenario, 2-6=universal(5题), 7-10=scene(4题), 11=done
+let sceneId = null;
+let birth = {};
+let universalAnswers = [];
+let sceneAnswers = [];
+
+// ============================================================
+// 渲染
+// ============================================================
+function render() {
+  // Progress: 1(birth) + 1(scenario) + 5(universal) + 4(scene) = 11步
+  let dots = '';
+  for(let i=0;i<11;i++){
+    const cls = i<step ? 'done' : '';
+    const s2 = (i>=1 && i<=6) ? ' s2' : '';
+    const s3 = (i>=7) ? ' s3' : '';
+    dots += `<div class="progress-dot${cls}${s2}${s3}"></div>`;
+  }
+  document.getElementById('progress').innerHTML = dots;
+  if(step===0) renderBirth();
+  else if(step===1) renderScenario();
+  else if(step>=2 && step<=6) renderUniversal(step-2);
+  else if(step>=7 && step<=10) renderSceneQ(step-7);
+  else showResult();
+}
+
+function renderBirth(){
+  const fv = (id) => birth[id] || '';
+  const monthOpts = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const hourOpts = BIRTH_FIELDS.find(f=>f.id==='hour').options;
+  const mbtiOpts = BIRTH_FIELDS.find(f=>f.id==='mbti').options;
+  const genderOpts = BIRTH_FIELDS.find(f=>f.id==='gender').options;
+  document.getElementById('card').innerHTML = `
+    <div class="badge s1">出生信息（选填）</div>
+    <div class="q-label">第 1 步 · 可直接跳过</div>
+    <div class="privacy-note">
+      📌 <b>填写原因：</b>出生信息用于生成命盘快照，帮助AI理解你当前的人生阶段。MBTI帮助AI更快适应你的思维和沟通偏好。<br>
+      🔒 <b>隐私说明：</b>信息仅在本地处理，不会上传或存储到任何服务器。跳过后画像仍会通过场景维度问题生成。
+    </div>
+    <div class="form-grid">
+      <div><label>出生年份</label><input type="number" placeholder="如 1995" value="${fv('year')}" oninput="birth.year=this.value"></div>
+      <div><label>出生月份</label><select onchange="birth.month=this.value"><option value="">选择</option>${monthOpts.slice(1).map((m,i)=>`<option value="${i+1}"${birth.month==i+1?' selected':''}>${m}</option>`).join('')}</select></div>
+      <div><label>出生日</label><input type="number" placeholder="1-31" min="1" max="31" value="${fv('day')}" oninput="birth.day=this.value"></div>
+      <div><label>出生时辰</label><select onchange="birth.hour=this.value">${hourOpts.map((h,i)=>`<option value="${i}"${birth.hour==i?' selected':''}>${h}</option>`).join('')}</select></div>
+      <div><label>性别</label><select onchange="birth.gender=this.value"><option value="">不填</option>${genderOpts.slice(1).map(g=>`<option value="${g}"${birth.gender===g?' selected':''}>${g}</option>`).join('')}</select></div>
+      <div><label>MBTI（选填）</label><select onchange="birth.mbti=this.value"><option value="">不知道 / 跳过</option>${mbtiOpts.slice(1).map(m=>`<option value="${m}"${birth.mbti===m?' selected':''}>${m}</option>`).join('')}</select></div>
+    </div>
+    <div style="color:var(--sub);font-size:0.78rem;margin-bottom:20px;padding:8px 12px;background:var(--bg);border-radius:8px">💡 不知道MBTI可以跳过。如果做过测试，填入4个字母（如 INTJ），AI会据此调整沟通风格。</div>
+    <div class="nav">
+      <span></span>
+      <span class="btn-skip" onclick="step=1;render()">跳过 →</span>
+      <button class="btn btn-next" onclick="step=1;render()">下一步 →</button>
+    </div>
+  `;
+}
+
+function renderScenario(){
+  document.getElementById('card').innerHTML = `
+    <div class="badge s2">场景选择</div>
+    <div class="q-label">第 2 步 · 选择最贴近的使用场景</div>
+    <div class="q-title">你主要用 AI 做什么？<br><span style="font-size:0.85rem;color:var(--sub);font-weight:400">我们会根据你的选择只问相关的问题</span></div>
+    <div class="options">${SCENARIOS.map((s,i)=>
+      `<div class="opt${sceneId===s.id?' picked':''}" onclick="selectScenario('${s.id}')">${s.label}<br><span style="font-size:0.8rem;color:var(--sub)">${s.desc}</span></div>`
+    ).join('')}</div>
+    <div class="nav">
+      <button class="btn btn-back" onclick="step=0;render()">← 出生信息</button>
+      <span></span><span></span>
+    </div>
+  `;
+}
+
+function selectScenario(id){
+  sceneId = id;
+  universalAnswers = [];
+  sceneAnswers = [];
+  step = 2;
+  render();
+}
+
+function renderUniversal(idx){
+  const q = UNIVERSAL_Q[idx];
+  document.getElementById('card').innerHTML = `
+    <div class="badge s2">${q.badge}</div>
+    <div class="q-label">第 ${idx+3} 步 · 通用偏好 ${idx+1}/5</div>
+    <div class="q-title">${q.q}</div>
+    <div class="options">${q.opts.map((o,i)=>
+      `<div class="opt${universalAnswers[idx]===i?' picked':''}" onclick="universalAnswers[${idx}]=${i};step++;render()">${o.t}</div>`
+    ).join('')}</div>
+    <div class="nav">
+      <button class="btn btn-back" onclick="step${idx===0?'=1':'--'};render()">← ${idx===0?'场景选择':'上一题'}</button>
+      <span class="btn-skip" onclick="universalAnswers[${idx}]=-1;step++;render()">跳过</span>
+      <span></span>
+    </div>
+  `;
+}
+
+function renderSceneQ(idx){
+  const qs = SCENE_Q[sceneId];
+  if(!qs||idx>=qs.length){showResult();return}
+  const q = qs[idx];
+  const isFill = q.type==='fill';
+  document.getElementById('card').innerHTML = `
+    <div class="badge s3">${q.badge}</div>
+    <div class="q-label">第 ${idx+8} 步 · ${q.badge} ${idx+1}/${qs.length}${isFill?'':'（点击选项自动跳转）'}</div>
+    <div class="q-title">${q.q}</div>
+    ${isFill ? `
+      <textarea class="fill-input" id="fillInput" placeholder="${q.placeholder||''}" oninput="sceneAnswers[${idx}]=this.value">${sceneAnswers[idx]||''}</textarea>
+      ${q.examples?`<div class="fill-hint">💡 参考：${q.examples.map(e=>'"'+e+'"').join('、')}</div>`:''}
+    ` : `
+      <div class="options">${q.opts.map((o,i)=>
+        `<div class="opt${sceneAnswers[idx]===i?' picked':''}" onclick="sceneAnswers[${idx}]=${i};step++;render()">${o.t}</div>`
+      ).join('')}</div>
+    `}
+    <div class="nav">
+      <button class="btn btn-back" onclick="step--;render()">← 上一题</button>
+      ${!isFill && idx<qs.length-1 ? `<span class="btn-skip" onclick="sceneAnswers[${idx}]=-1;step++;render()">跳过</span>` : ''}
+      ${isFill ? `<button class="btn btn-next" onclick="step++;render()">${idx===qs.length-1?'生成画像 ✨':'下一题 →'}</button>` : ''}
+    </div>
+  `;
+  if(isFill) document.getElementById('fillInput')?.focus();
+}
+
+// ============================================================
+// 生成画像
+// ============================================================
+function buildPrompt(){
+  const qs = SCENE_Q[sceneId];
+  const scene = SCENARIOS.find(s=>s.id===sceneId);
+  const sceneLabel = scene?scene.label:'未选择';
+
+  // 出生信息
+  let birthLine = [];
+  if(birth.year) birthLine.push(birth.year+'年');
+  if(birth.month) birthLine.push(birth.month+'月');
+  if(birth.day) birthLine.push(birth.day+'日');
+  if(birth.hour && birth.hour!=='0') birthLine.push(BIRTH_FIELDS.find(f=>f.id==='hour').options[parseInt(birth.hour)]);
+  if(birth.gender) birthLine.push('· '+birth.gender);
+  const birthStr = birthLine.length?birthLine.join(''):'未填写';
+  const hasBirth = birth.year && birth.month && birth.day;
+
+  // 通用维度
+  let universal = [];
+  UNIVERSAL_Q.forEach((q,i)=>{
+    const a = universalAnswers[i];
+    if(a===undefined||a===null||a===-1) universal.push({badge:q.badge,val:'未填写'});
+    else universal.push({badge:q.badge,val:q.opts[a].v});
+  });
+
+  // 场景维度
+  let dims = [];
+  qs.forEach((q,i)=>{
+    const a = sceneAnswers[i];
+    if(a===undefined||a===null||a===-1) dims.push({badge:q.badge,val:'未填写'});
+    else if(typeof a==='string') dims.push({badge:q.badge,val:a});
+    else dims.push({badge:q.badge,val:q.opts[a].v});
+  });
+
+  // MBTI映射
+  let mbtiTraits = [];
+  if(birth.mbti && MBTI_MAP[birth.mbti]){
+    const m = MBTI_MAP[birth.mbti];
+    mbtiTraits = [m.e, m.i||m.s, m.t||m.f, m.j||m.p];
+  }
+
+  // 组装
+  let prompt = `# AI 画像 · ${sceneLabel}
+
+## 用户背景
+- 出生信息：${birthStr}${hasBirth?'':'（命盘快照功能开发中）'}
+- 使用场景：${sceneLabel}
+
+`;
+
+  // 通用维度
+  prompt += `## 通用偏好\n`;
+  universal.forEach(u=>{
+    prompt += `- ${u.badge}：${u.val}\n`;
+  });
+  prompt += '\n';
+
+  // 场景维度
+  dims.forEach(d=>{
+    prompt += `## ${d.badge}\n${d.val}\n\n`;
+  });
+
+  // MBTI补充
+  if(mbtiTraits.length){
+    prompt += `## MBTI 补充参考
+类型：${birth.mbti}
+${mbtiTraits.join('\n')}
+
+> ⚠️ 以上为性格背景参考，优先级低于场景维度的回答。
+> 如果场景回答与 MBTI 推断有冲突，以场景回答为准。
+
+`;
+  }
+
+  prompt += `---
+> 本画像由 Warmstart v0.5.0 生成，复制到任何 AI 的 system prompt 中即可生效。
+`;
+  return prompt;
+}
+
+function showResult(){
+  document.getElementById('card').innerHTML = '';
+  document.getElementById('promptBox').textContent = buildPrompt();
+  document.getElementById('result').classList.add('visible');
+  document.getElementById('result').scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.progress-dot').forEach(el=>el.classList.add('done'));
+}
+
+async function copyPrompt(){
+  const t = document.getElementById('promptBox').textContent;
+  try{await navigator.clipboard.writeText(t)}
+  catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
+  showToast('✅ 已复制！粘贴到任何 AI 的 system prompt 中即可');
+}
+
+function resetAll(){
+  step=0;sceneId=null;birth={};universalAnswers=[];sceneAnswers=[];
+  document.getElementById('result').classList.remove('visible');
+  render();
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+render();
+</script>
+</body>
+</html>
