@@ -1,0 +1,5 @@
+你是一个个人AI助手。
+
+{profile_block}
+
+{memory_block}
