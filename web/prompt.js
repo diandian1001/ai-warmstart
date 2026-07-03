@@ -1,5 +1,5 @@
 // ============================================================
-// 生成画像（集成命盘 + 术语解释）
+// 生成画像（集成命盘 + 术语解释 + MBTI解释）
 // ============================================================
 function buildPrompt(){
   const qs = SCENE_Q[sceneId];
@@ -28,7 +28,6 @@ function buildPrompt(){
         birth.gender === '男' ? 'male' : 'female'
       );
       if(chart) {
-        // 命宫解释
         const mingExplain = {
           '子': '北方水位，冷静理性，善于分析',
           '丑': '东北土位，稳重踏实，务实保守',
@@ -43,8 +42,6 @@ function buildPrompt(){
           '戌': '西北土位，忠诚可靠，有责任感',
           '亥': '北方水位，智慧深沉，有洞察力',
         };
-
-        // 五行局解释
         const juExplain = {
           '水二局': '水局：智慧型，善于变通和适应',
           '木三局': '木局：成长型，善于学习和创新',
@@ -52,8 +49,6 @@ function buildPrompt(){
           '土五局': '土局：稳定型，善于积累和沉淀',
           '火六局': '火局：行动型，善于推动和变革',
         };
-
-        // 主星解释
         const starExplain = {
           '紫微': '帝星，统御力强，需要辅弼配合',
           '天机': '智星，善于谋略和变化',
@@ -148,12 +143,35 @@ function buildPrompt(){
     prompt += `## ${d.badge}\n${d.val}\n\n`;
   });
 
-  // MBTI补充
+  // MBTI补充（含解释）
   if(mbtiTraits.length){
-    prompt += `## MBTI 补充参考
-类型：${birth.mbti}
-${mbtiTraits.join('\n')}
+    const mbtiExplain = {
+      'I': '内向型 (Introversion)：从独处中获得能量，喜欢深度思考',
+      'E': '外向型 (Extraversion)：从社交中获得能量，喜欢互动交流',
+      'N': '直觉型 (iNtuition)：关注可能性和抽象概念，善于联想',
+      'S': '实感型 (Sensing)：关注具体事实和细节，脚踏实地',
+      'T': '思考型 (Thinking)：基于逻辑和客观分析做决定',
+      'F': '感受型 (Feeling)：基于价值观和他人感受做决定',
+      'J': '判断型 (Judging)：喜欢有计划、有条理的生活方式',
+      'P': '感知型 (Perceiving)：喜欢灵活、随性的生活方式',
+    };
 
+    prompt += `## MBTI 补充参考
+
+> MBTI（迈尔斯-布里格斯类型指标）是一种性格分类工具，将人的性格分为16种类型。
+> 每种类型由4个维度组成：能量来源(I/E)、信息获取(N/S)、决策方式(T/F)、生活方式(J/P)。
+
+**类型：** ${birth.mbti}
+
+**维度解读：**
+`;
+    for(const trait of mbtiTraits) {
+      const key = trait.charAt(0);
+      if(mbtiExplain[key]) {
+        prompt += `- ${mbtiExplain[key]}\n`;
+      }
+    }
+    prompt += `
 > ⚠️ 以上为性格背景参考，优先级低于场景维度的回答。
 > 如果场景回答与 MBTI 推断有冲突，以场景回答为准。
 
@@ -161,8 +179,8 @@ ${mbtiTraits.join('\n')}
   }
 
   prompt += `---
-> 本画像由 Warmstart v0.6.1 生成，复制到任何 AI 的 system prompt 中即可生效。
-> 如果 AI 不理解命盘术语，可以参考上方的解读说明。
+> 本画像由 Warmstart v0.6.2 生成，复制到任何 AI 的 system prompt 中即可生效。
+> 如果 AI 不理解命盘术语或 MBTI 类型，可以参考上方的解读说明。
 `;
   return prompt;
 }
