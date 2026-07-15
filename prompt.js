@@ -18,7 +18,7 @@ function buildPrompt(){
 
   // 命盘计算
   let ziweiBlock = '';
-  if(hasBirth) {
+  if (mode === 'exp' && hasBirth) {
     try {
       const chart = calculateZiwei(
         parseInt(birth.year),
@@ -120,7 +120,7 @@ function buildPrompt(){
 
   // MBTI映射
   let mbtiTraits = [];
-  if(birth.mbti && MBTI_MAP[birth.mbti]){
+  if (mode === 'exp' && birth.mbti && MBTI_MAP[birth.mbti]) {
     const m = MBTI_MAP[birth.mbti];
     mbtiTraits = [m.e, m.i||m.s, m.t||m.f, m.j||m.p];
   }
@@ -128,14 +128,32 @@ function buildPrompt(){
   // 组装
   let prompt = `# AI 画像 · ${sceneLabel}
 
-## 用户背景
-- 出生信息：${birthStr}
-- 使用场景：${sceneLabel}
+`;
+  if (mode === 'exp') {
+    prompt += `> 🎭 实验模式 · 紫微斗数与 MBTI 内容仅供娱乐和自我探索，不构成人格测量、心理评估、职业指导或任何决策依据。
+
+`;
+  }
+  prompt += `## 用户背景
+`;
+  if (mode === 'exp') {
+    prompt += `- 出生信息：${birthStr}
+`;
+  }
+  prompt += `- 使用场景：${sceneLabel}
 
 `;
 
-  // 命盘快照（优先级最高）
-  if(ziweiBlock) prompt += ziweiBlock;
+  // 命盘快照（仅实验模式，加娱乐声明）
+  if(mode === 'exp' && ziweiBlock) {
+    ziweiBlock = '## 🎭 Astrology Snapshot (Entertainment Only)\n\n' +
+      '> ⚠️ The following Zi Wei Dou Shu content is provided **for entertainment and self-exploration only**. ' +
+      'It does not constitute personality measurement, psychological assessment, or decision-making guidance. ' +
+      'If the content below conflicts with your actual preferences described in other sections, ' +
+      'always prioritize your stated preferences over astrological interpretations.\n\n' +
+      ziweiBlock;
+    prompt += ziweiBlock;
+  }
 
   // 通用维度
   prompt += `## 通用偏好\n`;
@@ -149,8 +167,8 @@ function buildPrompt(){
     prompt += `## ${d.badge}\n${d.val}\n\n`;
   });
 
-  // MBTI补充（含解释）
-  if(mbtiTraits.length){
+  // MBTI补充（仅在实验模式）
+  if(mode === 'exp' && mbtiTraits.length){
     const mbtiExplain = {
       'I': '内向型 (Introversion)：从独处中获得能量，喜欢深度思考',
       'E': '外向型 (Extraversion)：从社交中获得能量，喜欢互动交流',
@@ -182,8 +200,11 @@ function buildPrompt(){
   }
 
   prompt += `---
-> 本画像由 Warmstart v0.6.2 生成，复制到任何 AI 的 system prompt 中即可生效。
-> 如果 AI 不理解命盘术语或 MBTI 类型，可以参考上方的解读说明。
+> 本画像由 Warmstart v0.7.2 生成，复制到任何 AI 的 system prompt 中即可生效。
 `;
+  if (mode === 'exp') {
+    prompt += `> 如果 AI 不理解命盘术语或 MBTI 类型，可以参考上方的解读说明。
+`;
+  }
   return prompt;
 }

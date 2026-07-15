@@ -1,0 +1,34 @@
+{
+  "results": [
+    {
+      "name": "T1: Pro-writing",
+      "passed": true,
+      "details": "chars:233 bad:none"
+    },
+    {
+      "name": "T2: Pro-custom",
+      "passed": true
+    },
+    {
+      "name": "T3: Exp-skip-birth",
+      "passed": true
+    },
+    {
+      "name": "T4: Exp-complete-birth",
+      "passed": true,
+      "details": "chars:1695 missing:none errors:0"
+    },
+    {
+      "name": "T5: Copy",
+      "passed": true,
+      "details": "promptChars:233 clipboardChars:259 matched:true"
+    },
+    {
+      "name": "T6: Console errors",
+      "passed": true,
+      "details": "0 errors"
+    }
+  ],
+  "errors": [],
+  "passed": true
+}
