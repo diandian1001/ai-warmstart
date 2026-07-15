@@ -98,7 +98,7 @@ See [docs/profile-dimensions.md](docs/profile-dimensions.md) for a detailed expl
 
 ## Privacy
 
-**All data is processed entirely in your browser.** Nothing is uploaded to any server. No localStorage, no cookies, no analytics, no third-party APIs. Data disappears when you close the page.
+**All data is processed entirely in your browser.** Nothing is uploaded to any server. No cookies, no analytics, no third-party APIs. localStorage is used only to save your Chinese/English UI language preference. Questionnaire answers, birth information, MBTI type, and generated profiles are held only in page memory and disappear when you close the page.
 
 See [PRIVACY.md](PRIVACY.md) for full details.
 

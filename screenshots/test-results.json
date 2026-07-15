@@ -1,0 +1,36 @@
+{
+  "results": [
+    {
+      "name": "T1: Pro-writing",
+      "passed": true,
+      "details": "chars:233 bad:none"
+    },
+    {
+      "name": "T2: Pro-custom",
+      "passed": true
+    },
+    {
+      "name": "T3: Exp-skip-birth",
+      "passed": true
+    },
+    {
+      "name": "T4: Exp-fill-birth",
+      "passed": true,
+      "details": "disclaimer:true"
+    },
+    {
+      "name": "T6: Copy",
+      "passed": true,
+      "details": "toast:true"
+    },
+    {
+      "name": "T7: Console errors",
+      "passed": false,
+      "details": "1 errors: T6: Failed to execute 'writeText' on 'Clipboard': Write permission denied."
+    }
+  ],
+  "errors": [
+    "T6: Failed to execute 'writeText' on 'Clipboard': Write permission denied."
+  ],
+  "passed": false
+}

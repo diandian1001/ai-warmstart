@@ -65,25 +65,21 @@
 <div class="container">
   <div class="header">
     <h1>🧭 Warmstart</h1>
-    <p data-t="tagline"></p>
-    <div class="lang-switch">
-      <button id="btnZh" class="active" onclick="switchLang('zh')">中文</button>
-      <button id="btnEn" onclick="switchLang('en')">EN</button>
-    </div>
+    <p>生成你的 AI 协作画像 — 适用于 ChatGPT、Claude、Cursor、Hermes</p>
   </div>
   <div class="progress" id="progress"></div>
   <div class="card" id="card"></div>
   <div class="result" id="result">
-    <h2 data-t="resultTitle"></h2>
-    <p style="text-align:center;color:var(--sub);margin-bottom:14px" data-t="resultHint"></p>
+    <h2>✅ 你的 AI 协作画像</h2>
+    <p style="text-align:center;color:var(--sub);margin-bottom:14px">复制到任何 AI 的 system prompt 中即可生效</p>
     <div class="prompt-box" id="promptBox"></div>
     <div class="actions">
-      <button class="btn btn-copy" onclick="copyPrompt()" data-t="copyBtn"></button>
-      <button class="btn btn-reset" onclick="resetAll()" data-t="resetBtn"></button>
+      <button class="btn btn-copy" onclick="copyPrompt()">📋 复制</button>
+      <button class="btn btn-reset" onclick="resetAll()">🔄 重新开始</button>
     </div>
   </div>
   <div class="footer">
-    <a href="https://github.com/diandian1001/ai-warmstart" target="_blank">GitHub</a> · <a href="PRIVACY.md" target="_blank">Privacy</a> · MIT · v0.7.1
+    <a href="https://github.com/diandian1001/ai-warmstart" target="_blank">GitHub</a> · <a href="PRIVACY.md" target="_blank">Privacy</a> · MIT · v0.7.2
   </div>
   <div class="toast" id="toast"></div>
 </div>
@@ -93,68 +89,7 @@
 var mode = null, uiLang = 'zh';
 
 // ========== Translations ==========
-var T = {
-  tagline: {zh:'生成你的 AI 协作画像 — 适用于 ChatGPT、Claude、Cursor、Hermes',en:'Generate your AI collaboration profile — works with ChatGPT, Claude, Cursor, Hermes'},
-  resultTitle: {zh:'✅ 你的 AI 协作画像',en:'✅ Your AI Collaboration Profile'},
-  resultHint: {zh:'复制到任何 AI 的 system prompt 中即可生效',en:'Copy and paste into any AI tool\'s system prompt'},
-  copyBtn: {zh:'📋 复制',en:'📋 Copy'},
-  resetBtn: {zh:'🔄 重新开始',en:'🔄 Start Over'},
-  copied: {zh:'✅ 已复制！粘贴到任何 AI 的 system prompt 中即可',en:'✅ Copied! Paste into any AI tool\'s system prompt'},
-  // Mode
-  modeTitle: {zh:'选择模式',en:'Choose Mode'},
-  modeStep: {zh:'第 1 步 · 选择你的体验',en:'Step 1 · Select your experience'},
-  modeQ: {zh:'你想用哪种方式生成 AI 画像？',en:'How would you like to generate your AI profile?'},
-  proTitle: {zh:'💼 专业模式',en:'💼 Professional Mode'},
-  proRec: {zh:'推荐',en:'Recommended'},
-  proDesc: {zh:'聚焦你可观察的 AI 协作偏好：沟通风格、反馈需求、任务管理和决策方式。<strong>不需要任何个人信息。</strong>生成可在任何工作场景使用的简洁专业画像。',en:'Focus on your observable AI collaboration preferences: communication style, feedback needs, task management, and decision-making approach. <strong>No personal data required.</strong> Generates a clean, professional profile for any work context.'},
-  expTitle: {zh:'🎭 实验模式',en:'🎭 Experimental Mode'},
-  expDesc: {zh:'包含专业模式的全部内容，外加可选 MBTI 类型和紫微斗数（中国传统星命学），用于娱乐和自我探索。<strong>⚠️ 星座内容仅供娱乐——不构成人格测量、心理评估或决策依据。</strong>',en:'Includes everything in Professional Mode, plus optional MBTI type and Zi Wei Dou Shu (Chinese astrology) for entertainment and self-exploration. <strong>⚠️ Astrology content is for entertainment only — it does not constitute personality measurement, psychological assessment, or decision-making guidance.</strong>'},
-  modeHint: {zh:'你可以随时点击"重新开始"切换模式。',en:'You can switch modes anytime by clicking "Start Over".'},
-  // Birth
-  birthBadge: {zh:'实验模式 · 出生信息（选填）',en:'Experimental · Birth Info (Optional)'},
-  birthStep: {zh:'第 2 步 · 可以全部跳过',en:'Step 2 · You can skip this entirely'},
-  birthWarning: {zh:'🎭 <strong>仅供娱乐：</strong>本页面的星座功能（紫微斗数星盘、MBTI 类型映射）<strong>仅供娱乐性自我探索</strong>。不构成人格测量、心理评估、职业指导或任何形式的决策依据。星座对性格或人生阶段的解释不声称科学有效性。',en:'🎭 <strong>Entertainment Only:</strong> The astrology features on this page (Zi Wei Dou Shu star charts, MBTI type mapping) are provided <strong>for entertainment and self-exploration purposes only</strong>. They do not constitute personality measurement, psychological assessment, career guidance, or any form of decision-making basis.'},
-  birthPrivacy: {zh:'🔒 <strong>隐私：</strong>本页面所有数据完全在你的浏览器中处理。<strong>不会上传到任何服务器。</strong>关闭页面后数据不保留。详见 <a href="PRIVACY.md" target="_blank" style="color:var(--a1)">PRIVACY.md</a>。',en:'🔒 <strong>Privacy:</strong> All data entered on this page is processed entirely in your browser. <strong>Nothing is uploaded to any server.</strong> No data is stored after you close this page. See <a href="PRIVACY.md" target="_blank" style="color:var(--a1)">PRIVACY.md</a> for details.'},
-  birthHint: {zh:'💡 不知道 MBTI 可以跳过。本页所有字段均为选填。',en:'💡 You can skip MBTI if you haven\'t taken the test. All fields on this page are optional.'},
-  backBtn: {zh:'← 返回',en:'← Back'},
-  skipAllBtn: {zh:'全部跳过 →',en:'Skip All →'},
-  nextBtn: {zh:'下一步 →',en:'Next →'},
-  // Birth fields
-  birthYear: {zh:'出生年份',en:'Birth Year'},
-  birthMonth: {zh:'出生月份',en:'Birth Month'},
-  birthDay: {zh:'出生日',en:'Birth Day'},
-  birthHour: {zh:'出生时辰',en:'Birth Hour'},
-  birthGender: {zh:'性别',en:'Gender'},
-  birthMbti: {zh:'MBTI（选填）',en:'MBTI (Optional)'},
-  selectOpt: {zh:'选择',en:'Select'},
-  skipOpt: {zh:'跳过',en:'Skip'},
-  unknownOpt: {zh:'不知道 / 跳过',en:'Don\'t know / Skip'},
-  // Scenario
-  sceneBadge: {zh:'场景选择',en:'Scenario'},
-  sceneQ: {zh:'你主要用 AI 做什么？',en:'What do you primarily use AI for?'},
-  sceneHint: {zh:'我们只会问和你选择相关的问题',en:'We\'ll only ask questions relevant to your choice'},
-  // Universal
-  genPref: {zh:'通用偏好',en:'General Preference'},
-  prevBtn: {zh:'← 上一题',en:'← Previous'},
-  skipBtn: {zh:'跳过',en:'Skip'},
-  genBtn: {zh:'生成画像 ✨',en:'Generate Profile ✨'},
-  // Step labels
-  stepOf: {zh:'/',en:' of '},
-};
-
-function t(key){ return T[key] ? (T[key][uiLang] || key) : key; }
-
-function switchLang(lang){
-  uiLang = lang;
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-  document.getElementById('btnZh').classList.toggle('active', lang==='zh');
-  document.getElementById('btnEn').classList.toggle('active', lang==='en');
-  try { localStorage.setItem('warmstart_uiLang', lang); } catch(e){}
-  // Update static elements
-  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
-  document.querySelector('title').textContent = lang==='zh' ? 'Warmstart — AI 协作画像生成器' : 'Warmstart — AI Collaboration Profile Generator';
-  render();
-}
+var uiLang = 'zh';
 
 // ========== Data (unchanged) ==========
 const BIRTH_FIELDS = [
@@ -169,8 +104,8 @@ const BIRTH_FIELDS = [
 const MBTI_MAP = {INTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},INTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},ENTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},ENTP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},INFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},INFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},ENFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},ENFP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},ISTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},ISFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},ESTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},ESFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},ISTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},ISFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},ESTP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},ESFP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"}};
 
 const SCENARIOS = [
-  {id:"writing",key:"writing"},{id:"research",key:"research"},{id:"planning",key:"planning"},
-  {id:"coding",key:"coding"},{id:"creative",key:"creative"},{id:"daily",key:"daily"},{id:"custom",key:"custom"}
+  {id:"writing",label:"📝 写作与表达"},{id:"research",label:"🔍 研究与学习"},{id:"planning",label:"📊 规划与管理"},
+  {id:"coding",label:"💻 技术与编程"},{id:"creative",label:"🎨 创意与设计"},{id:"daily",label:"💬 日常与陪伴"},{id:"custom",label:"⚙️ 自定义"}
 ];
 var SCN = {
   writing:{zh:'📝 写作与表达',en:'📝 Writing & Expression',dzh:'写邮件、报告、文案、改写润色、翻译',den:'Emails, reports, copywriting, editing, translation'},
@@ -183,7 +118,6 @@ var SCN = {
 };
 
 // Scene questions — labels only, full text in prompt.js (unchanged)
-const SCENE_Q = {}; // populated below from original prompt.js data
 
 var SCENE_Q = {
   writing: [
@@ -390,22 +324,30 @@ var UNIVERSAL_Q = [
 // ========== State & Render (adapted for i18n) ==========
 var step = 0, sceneId = null, birth = {}, universalAnswers = [], sceneAnswers = [];
 
-function totalSteps(){
-  var scene = SCENE_Q[sceneId];
-  var sceneCount = scene ? scene.length : 0;
-  if (mode === 'exp') return 1 + 1 + 5 + sceneCount;
-  return 1 + 5 + sceneCount;
+function totalSteps() {
+  var modeStepCount = 1;
+  var birthStepCount = mode === 'exp' ? 1 : 0;
+  var scenarioStepCount = 1;
+  var universalStepCount = UNIVERSAL_Q.length;
+  var sceneStepCount = sceneId && SCENE_Q[sceneId]
+    ? SCENE_Q[sceneId].length
+    : 0;
+  return modeStepCount + birthStepCount + scenarioStepCount + universalStepCount + sceneStepCount;
 }
 
-function sceneLabel(id){ var s=SCN[id]; return s ? (uiLang==='zh'?s.zh:s.en) : id; }
-function sceneDesc(id){ var s=SCN[id]; return s ? (uiLang==='zh'?s.dzh:s.den) : ''; }
+function sceneLabel(id){ var s=SCN[id]; return s ? s.zh : id; }
+function sceneDesc(id){ var s=SCN[id]; return s ? s.dzh : ''; }
 
 function render(){
   var total = totalSteps(), dots = '';
   for(var i=0;i<total;i++){
     var cls = i<step?'done':'', s2='', s3='';
-    if(mode==='exp'){ if(i>=2&&i<=6)s2=' s2'; else if(i>=7)s3=' s3'; }
-    else { if(i>=1&&i<=5)s2=' s2'; else if(i>=6)s3=' s3'; }
+    var birthOff = mode==='exp' ? 1 : 0;
+    var universalStart = 1 + birthOff + 1; // mode + birth + scenario
+    var universalLen = UNIVERSAL_Q.length;
+    var sceneQStart = universalStart + universalLen;
+    if(i >= universalStart && i < universalStart + universalLen) s2=' s2';
+    else if(i >= sceneQStart) s3=' s3';
     dots += '<div class="progress-dot'+cls+s2+s3+'"></div>';
   }
   document.getElementById('progress').innerHTML = dots;
@@ -413,26 +355,36 @@ function render(){
   else if(mode==='exp'&&step===1) renderBirth();
   else if((mode==='exp'&&step===2)||(mode==='pro'&&step===1)) renderScenario();
   else {
-    var offset = mode==='exp'?2:1;
-    var sceneQCount = (SCENE_Q[sceneId] || []).length;
-    if(step>=offset+1&&step<=offset+5) renderUniversal(step-offset-1);
-    else if(step>=offset+6&&step<offset+6+sceneQCount) renderSceneQ(step-offset-6);
-    else showResult();
+    // Pro:  step 0=mode, 1=scenario, 2-6=universal, 7+=sceneQ
+    // Exp:  step 0=mode, 1=birth, 2=scenario, 3-7=universal, 8+=sceneQ
+    var birthOff = mode==='exp' ? 1 : 0;
+    var universalStart = 1 + birthOff + 1; // mode + birth + scenario
+    var universalEnd = universalStart + UNIVERSAL_Q.length - 1;
+    var sceneQStart = universalEnd + 1;
+    var sceneQCount = sceneId && SCENE_Q[sceneId] ? SCENE_Q[sceneId].length : 0;
+    var sceneQEnd = sceneQStart + sceneQCount - 1;
+    if(step >= universalStart && step <= universalEnd) {
+      renderUniversal(step - universalStart);
+    } else if(step >= sceneQStart && step <= sceneQEnd) {
+      renderSceneQ(step - sceneQStart);
+    } else {
+      showResult();
+    }
   }
 }
 
 function renderMode(){
   var c = document.getElementById('card');
-  c.innerHTML = '<div class="badge s0">'+t('modeTitle')+'</div>'+
-    '<div class="q-label">'+t('modeStep')+'</div>'+
-    '<div class="q-title">'+t('modeQ')+'</div>'+
+  c.innerHTML = '<div class="badge s0">'+'选择模式'+'</div>'+
+    '<div class="q-label">'+'第 1 步 · 选择你的体验'+'</div>'+
+    '<div class="q-title">'+'你想用哪种方式生成 AI 画像？'+'</div>'+
     '<div class="mode-card recommended" onclick="selectMode(\'pro\')" style="margin-bottom:14px">'+
-      '<div class="mode-title">'+t('proTitle')+' <span class="rec-tag">'+t('proRec')+'</span></div>'+
-      '<div class="mode-desc">'+t('proDesc')+'</div></div>'+
+      '<div class="mode-title">'+'💼 专业模式'+' <span class="rec-tag">'+'推荐'+'</span></div>'+
+      '<div class="mode-desc">'+'聚焦你可观察的 AI 协作偏好：沟通风格、反馈需求、任务管理和决策方式。<strong>不需要任何个人信息。</strong>生成可在任何工作场景使用的简洁专业画像。'+'</div></div>'+
     '<div class="mode-card" onclick="selectMode(\'exp\')">'+
-      '<div class="mode-title">'+t('expTitle')+'</div>'+
-      '<div class="mode-desc">'+t('expDesc')+'</div></div>'+
-    '<p style="color:var(--sub);font-size:0.78rem;text-align:center;margin-top:12px">'+t('modeHint')+'</p>';
+      '<div class="mode-title">'+'🎭 实验模式'+'</div>'+
+      '<div class="mode-desc">'+'包含专业模式的全部内容，外加可选 MBTI 类型和紫微斗数（中国传统星命学），用于娱乐和自我探索。<strong>⚠️ 星座内容仅供娱乐——不构成人格测量、心理评估或决策依据。</strong>'+'</div></div>'+
+    '<p style="color:var(--sub);font-size:0.78rem;text-align:center;margin-top:12px">'+'你可以随时点击"重新开始"切换模式。'+'</p>';
 }
 
 function selectMode(m){ mode=m; step=1; birth={}; universalAnswers=[]; sceneAnswers=[]; sceneId=null; render(); }
@@ -443,34 +395,34 @@ function renderBirth(){
   var mbO=BIRTH_FIELDS.find(function(f){return f.id==='mbti'}).options;
   var gO=BIRTH_FIELDS.find(function(f){return f.id==='gender'}).options;
   document.getElementById('card').innerHTML =
-    '<div class="badge s1">'+t('birthBadge')+'</div>'+
-    '<div class="q-label">'+t('birthStep')+'</div>'+
-    '<div class="warning-note">'+t('birthWarning')+'</div>'+
-    '<div class="privacy-note">'+t('birthPrivacy')+'</div>'+
+    '<div class="badge s1">'+'实验模式 · 出生信息（选填）'+'</div>'+
+    '<div class="q-label">'+'第 2 步 · 可以全部跳过'+'</div>'+
+    '<div class="warning-note">'+'🎭 <strong>仅供娱乐：</strong>本页面的星座功能（紫微斗数星盘、MBTI 类型映射）<strong>仅供娱乐性自我探索</strong>。不构成人格测量、心理评估、职业指导或任何形式的决策依据。星座对性格或人生阶段的解释不声称科学有效性。'+'</div>'+
+    '<div class="privacy-note">'+'🔒 <strong>隐私：</strong>本页面所有数据完全在你的浏览器中处理。<strong>不会上传到任何服务器。</strong>关闭页面后数据不保留。详见 <a href="PRIVACY.md" target="_blank" style="color:var(--a1)">PRIVACY.md</a>。'+'</div>'+
     '<div class="form-grid">'+
-      '<div><label>'+t('birthYear')+'</label><input type="number" placeholder="e.g. 1995" value="'+fv('year')+'" oninput="birth.year=this.value"></div>'+
-      '<div><label>'+t('birthMonth')+'</label><select onchange="birth.month=this.value"><option value="">'+t('selectOpt')+'</option>'+mO.slice(1).map(function(m,i){return '<option value="'+(i+1)+'"'+(birth.month==i+1?' selected':'')+'>'+m+'</option>';}).join('')+'</select></div>'+
-      '<div><label>'+t('birthDay')+'</label><input type="number" placeholder="1-31" min="1" max="31" value="'+fv('day')+'" oninput="birth.day=this.value"></div>'+
-      '<div><label>'+t('birthHour')+'</label><select onchange="birth.hour=this.value">'+hO.map(function(h,i){return '<option value="'+i+'"'+(birth.hour==i?' selected':'')+'>'+h+'</option>';}).join('')+'</select></div>'+
-      '<div><label>'+t('birthGender')+'</label><select onchange="birth.gender=this.value"><option value="">'+t('skipOpt')+'</option>'+gO.slice(1).map(function(g){return '<option value="'+g+'"'+(birth.gender===g?' selected':'')+'>'+g+'</option>';}).join('')+'</select></div>'+
-      '<div><label>'+t('birthMbti')+'</label><select onchange="birth.mbti=this.value"><option value="">'+t('unknownOpt')+'</option>'+mbO.slice(1).map(function(m){return '<option value="'+m+'"'+(birth.mbti===m?' selected':'')+'>'+m+'</option>';}).join('')+'</select></div>'+
+      '<div><label>'+'出生年份'+'</label><input type="number" placeholder="e.g. 1995" value="'+fv('year')+'" oninput="birth.year=this.value"></div>'+
+      '<div><label>'+'出生月份'+'</label><select onchange="birth.month=this.value"><option value="">'+'选择'+'</option>'+mO.slice(1).map(function(m,i){return '<option value="'+(i+1)+'"'+(birth.month==i+1?' selected':'')+'>'+m+'</option>';}).join('')+'</select></div>'+
+      '<div><label>'+'出生日'+'</label><input type="number" placeholder="1-31" min="1" max="31" value="'+fv('day')+'" oninput="birth.day=this.value"></div>'+
+      '<div><label>'+'出生时辰'+'</label><select onchange="birth.hour=this.value">'+hO.map(function(h,i){return '<option value="'+i+'"'+(birth.hour==i?' selected':'')+'>'+h+'</option>';}).join('')+'</select></div>'+
+      '<div><label>'+'性别'+'</label><select onchange="birth.gender=this.value"><option value="">'+'跳过'+'</option>'+gO.slice(1).map(function(g){return '<option value="'+g+'"'+(birth.gender===g?' selected':'')+'>'+g+'</option>';}).join('')+'</select></div>'+
+      '<div><label>'+'MBTI（选填）'+'</label><select onchange="birth.mbti=this.value"><option value="">'+'不知道 / 跳过'+'</option>'+mbO.slice(1).map(function(m){return '<option value="'+m+'"'+(birth.mbti===m?' selected':'')+'>'+m+'</option>';}).join('')+'</select></div>'+
     '</div>'+
-    '<div style="color:var(--sub);font-size:0.78rem;margin-bottom:20px;padding:8px 12px;background:var(--bg);border-radius:8px">'+t('birthHint')+'</div>'+
-    '<div class="nav"><button class="btn btn-back" onclick="step=0;render()">'+t('backBtn')+'</button>'+
-    '<span class="btn-skip" onclick="step=2;render()">'+t('skipAllBtn')+'</span>'+
-    '<button class="btn btn-next" onclick="step=2;render()">'+t('nextBtn')+'</button></div>';
+    '<div style="color:var(--sub);font-size:0.78rem;margin-bottom:20px;padding:8px 12px;background:var(--bg);border-radius:8px">'+'💡 不知道 MBTI 可以跳过。本页所有字段均为选填。'+'</div>'+
+    '<div class="nav"><button class="btn btn-back" onclick="step=0;render()">'+'← 返回'+'</button>'+
+    '<span class="btn-skip" onclick="step=2;render()">'+'全部跳过 →'+'</span>'+
+    '<button class="btn btn-next" onclick="step=2;render()">'+'下一步 →'+'</button></div>';
 }
 
 function renderScenario(){
   var stepNum = mode==='exp'?3:2;
   document.getElementById('card').innerHTML =
-    '<div class="badge s2">'+t('sceneBadge')+'</div>'+
-    '<div class="q-label">'+t('modeStep').replace('1',stepNum)+'</div>'+
-    '<div class="q-title">'+t('sceneQ')+'<br><span style="font-size:0.85rem;color:var(--sub);font-weight:400">'+t('sceneHint')+'</span></div>'+
+    '<div class="badge s2">'+'场景选择'+'</div>'+
+    '<div class="q-label">'+'第 1 步 · 选择你的体验'.replace('1',stepNum)+'</div>'+
+    '<div class="q-title">'+'你主要用 AI 做什么？'+'<br><span style="font-size:0.85rem;color:var(--sub);font-weight:400">'+'我们只会问和你选择相关的问题'+'</span></div>'+
     '<div class="options">'+SCENARIOS.map(function(s){
       return '<div class="opt'+(sceneId===s.id?' picked':'')+'" onclick="selectScenario(\''+s.id+'\')">'+sceneLabel(s.id)+'<br><span style="font-size:0.8rem;color:var(--sub)">'+sceneDesc(s.id)+'</span></div>';
     }).join('')+'</div>'+
-    '<div class="nav"><button class="btn btn-back" onclick="step='+(mode==='exp'?1:0)+';render()">'+t('backBtn')+'</button><span></span><span></span></div>';
+    '<div class="nav"><button class="btn btn-back" onclick="step='+(mode==='exp'?1:0)+';render()">'+'← 返回'+'</button><span></span><span></span></div>';
 }
 
 function selectScenario(id){ sceneId=id; universalAnswers=[]; sceneAnswers=[]; step=(mode==='exp'?3:2); render(); }
@@ -479,13 +431,13 @@ function renderUniversal(idx){
   var q=UNIVERSAL_Q[idx], offset=mode==='exp'?3:2;
   document.getElementById('card').innerHTML =
     '<div class="badge s2">'+q.badge+'</div>'+
-    '<div class="q-label">'+(uiLang==='zh'?'第':'Step ')+(offset+idx+1)+(uiLang==='zh'?' 步 · ':' · ')+t('genPref')+' '+(idx+1)+'/5</div>'+
+    '<div class="q-label">'+(uiLang==='zh'?'第':'Step ')+(offset+idx+1)+(uiLang==='zh'?' 步 · ':' · ')+'通用偏好'+' '+(idx+1)+'/5</div>'+
     '<div class="q-title">'+q.q+'</div>'+
     '<div class="options">'+q.opts.map(function(o,i){
       return '<div class="opt'+(universalAnswers[idx]===i?' picked':'')+'" onclick="universalAnswers['+idx+']='+i+';step++;render()">'+o.t+'</div>';
     }).join('')+'</div>'+
-    '<div class="nav"><button class="btn btn-back" onclick="step--;render()">'+t('prevBtn')+'</button>'+
-    '<span class="btn-skip" onclick="universalAnswers['+idx+']=-1;step++;render()">'+t('skipBtn')+'</span><span></span></div>';
+    '<div class="nav"><button class="btn btn-back" onclick="step--;render()">'+'← 上一题'+'</button>'+
+    '<span class="btn-skip" onclick="universalAnswers['+idx+']=-1;step++;render()">'+'跳过'+'</span><span></span></div>';
 }
 
 function renderSceneQ(idx){
@@ -493,16 +445,16 @@ function renderSceneQ(idx){
   var q=qs[idx], isFill=q.type==='fill', offset=mode==='exp'?8:7;
   document.getElementById('card').innerHTML =
     '<div class="badge s3">'+q.badge+'</div>'+
-    '<div class="q-label">'+(uiLang==='zh'?'第':'Step ')+(offset+idx+1)+(uiLang==='zh'?' 步 · ':' · ')+q.badge+' '+(idx+1)+t('stepOf')+qs.length+(isFill?'':' (click to auto-advance)')+'</div>'+
+    '<div class="q-label">'+(uiLang==='zh'?'第':'Step ')+(offset+idx+1)+(uiLang==='zh'?' 步 · ':' · ')+q.badge+' '+(idx+1)+'/'+qs.length+(isFill?'':' (click to auto-advance)')+'</div>'+
     '<div class="q-title">'+q.q+'</div>'+
     (isFill ? '<textarea class="fill-input" id="fillInput" placeholder="'+(q.placeholder||'')+'" oninput="sceneAnswers['+idx+']=this.value">'+(sceneAnswers[idx]||'')+'</textarea>'+(
       q.examples?'<div class="fill-hint">💡 Examples: '+q.examples.map(function(e){return '"'+e+'"';}).join(', ')+'</div>':'')
     : '<div class="options">'+q.opts.map(function(o,i){
         return '<div class="opt'+(sceneAnswers[idx]===i?' picked':'')+'" onclick="sceneAnswers['+idx+']='+i+';step++;render()">'+o.t+'</div>';
       }).join('')+'</div>')+
-    '<div class="nav"><button class="btn btn-back" onclick="step--;render()">'+t('prevBtn')+'</button>'+
-    (!isFill&&idx<qs.length-1?'<span class="btn-skip" onclick="sceneAnswers['+idx+']=-1;step++;render()">'+t('skipBtn')+'</span>':'')+
-    (isFill?'<button class="btn btn-next s3" onclick="step++;render()">'+(idx===qs.length-1?t('genBtn'):t('nextBtn'))+'</button>':'')+'</div>';
+    '<div class="nav"><button class="btn btn-back" onclick="step--;render()">'+'← 上一题'+'</button>'+
+    (!isFill&&idx<qs.length-1?'<span class="btn-skip" onclick="sceneAnswers['+idx+']=-1;step++;render()">'+'跳过'+'</span>':'')+
+    (isFill?'<button class="btn btn-next s3" onclick="step++;render()">'+(idx===qs.length-1?'生成画像 ✨':'下一步 →')+'</button>':'')+'</div>';
   if(isFill) document.getElementById('fillInput')&&document.getElementById('fillInput').focus();
 }
 
@@ -517,17 +469,17 @@ function showResult(){
 function copyPrompt(){
   var txt=document.getElementById('promptBox').textContent;
   try{navigator.clipboard.writeText(txt)}catch(e){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
-  showToast(t('copied'));
+  showToast('✅ 已复制！粘贴到任何 AI 的 system prompt 中即可');
 }
 
 function resetAll(){step=0;mode=null;sceneId=null;birth={};universalAnswers=[];sceneAnswers=[];document.getElementById('result').classList.remove('visible');render();}
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(function(){el.classList.remove('show')},2500)}
 
 // Restore saved language
-(function(){
-  var saved; try{saved=localStorage.getItem('warmstart_uiLang')}catch(e){saved=null}
-  if(saved==='en') switchLang('en'); else switchLang('zh');
-})();
+// Initialize: Chinese only
+uiLang = 'zh';
+document.documentElement.lang = 'zh-CN';
+render();
 </script>
 </body>
 </html>

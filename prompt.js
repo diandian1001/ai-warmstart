@@ -128,9 +128,19 @@ function buildPrompt(){
   // 组装
   let prompt = `# AI 画像 · ${sceneLabel}
 
-## 用户背景
-- 出生信息：${birthStr}
-- 使用场景：${sceneLabel}
+`;
+  if (mode === 'exp') {
+    prompt += `> 🎭 实验模式 · 星座内容仅供娱乐，不构成人格测量或决策依据。
+
+`;
+  }
+  prompt += `## 用户背景
+`;
+  if (mode === 'exp') {
+    prompt += `- 出生信息：${birthStr}
+`;
+  }
+  prompt += `- 使用场景：${sceneLabel}
 
 `;
 
@@ -191,7 +201,10 @@ function buildPrompt(){
 
   prompt += `---
 > 本画像由 Warmstart v0.7.1 生成，复制到任何 AI 的 system prompt 中即可生效。
-> 如果 AI 不理解命盘术语或 MBTI 类型，可以参考上方的解读说明。
 `;
+  if (mode === 'exp') {
+    prompt += `> 如果 AI 不理解命盘术语或 MBTI 类型，可以参考上方的解读说明。
+`;
+  }
   return prompt;
 }
