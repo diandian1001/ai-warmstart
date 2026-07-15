@@ -3,47 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Warmstart — AI Collaboration Profile Generator</title>
+<title>Warmstart — AI 协作画像生成器</title>
 <style>
   :root{--bg:#0f1117;--card:#1a1d27;--border:#2a2d3a;--text:#e1e4eb;--sub:#8b8fa3;--a1:#7c5cfc;--a2:#f59e0b;--a3:#10b981;--radius:14px}
   *{margin:0;padding:0;box-sizing:border-box}
-  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;min-height:100vh;display:flex;justify-content:center}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC','PingFang SC',sans-serif;line-height:1.6;min-height:100vh;display:flex;justify-content:center}
   .container{max-width:640px;width:100%;padding:30px 20px}
-  .header{text-align:center;margin-bottom:16px}
+  .header{text-align:center;margin-bottom:10px;position:relative}
   .header h1{font-size:1.6rem;font-weight:700}
   .header p{color:var(--sub);font-size:0.9rem;margin-top:4px}
+  .lang-switch{position:absolute;top:0;right:0;display:flex;gap:4px}
+  .lang-switch button{padding:4px 10px;font-size:0.75rem;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--sub);cursor:pointer;transition:all 0.2s}
+  .lang-switch button.active{background:var(--a1);color:#fff;border-color:var(--a1)}
   .progress{display:flex;gap:4px;margin-bottom:24px}
   .progress-dot{flex:1;height:4px;background:var(--border);border-radius:4px;transition:background 0.3s}
-  .progress-dot.done{background:var(--a1)}
-  .progress-dot.done.s2{background:var(--a2)}
-  .progress-dot.done.s3{background:var(--a3)}
+  .progress-dot.done{background:var(--a1)}.progress-dot.done.s2{background:var(--a2)}.progress-dot.done.s3{background:var(--a3)}
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:32px 24px;animation:fadeIn 0.3s ease}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
   .badge{display:inline-block;padding:3px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;margin-bottom:14px}
-  .badge.s1{background:rgba(124,92,252,0.12);color:var(--a1)}
-  .badge.s2{background:rgba(245,158,11,0.12);color:var(--a2)}
-  .badge.s3{background:rgba(16,185,129,0.12);color:var(--a3)}
-  .badge.s0{background:rgba(124,92,252,0.12);color:var(--a1)}
+  .badge.s1{background:rgba(124,92,252,.12);color:var(--a1)}.badge.s2{background:rgba(245,158,11,.12);color:var(--a2)}.badge.s3{background:rgba(16,185,129,.12);color:var(--a3)}.badge.s0{background:rgba(124,92,252,.12);color:var(--a1)}
   .q-label{color:var(--sub);font-size:0.8rem;margin-bottom:12px}
   .q-title{font-size:1.1rem;font-weight:600;margin-bottom:20px;line-height:1.5}
   .privacy-note{color:var(--sub);font-size:0.78rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.6}
-  .privacy-note b{color:var(--a1)}
-  .warning-note{color:var(--a2);font-size:0.78rem;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.6}
-  .warning-note strong{color:var(--a2)}
+  .warning-note{color:var(--a2);font-size:0.78rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px 14px;margin-bottom:20px;line-height:1.6}
   .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
   .form-grid label{color:var(--sub);font-size:0.76rem;display:block;margin-bottom:4px}
   .form-grid input,.form-grid select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.9rem}
   .form-grid input:focus,.form-grid select:focus{outline:none;border-color:var(--a1)}
   .options{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
   .opt{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all 0.2s;font-size:0.9rem;line-height:1.5}
-  .opt:hover{border-color:var(--a1)}
-  .opt.picked{border-color:var(--a1);background:rgba(124,92,252,0.06)}
+  .opt:hover{border-color:var(--a1)}.opt.picked{border-color:var(--a1);background:rgba(124,92,252,.06)}
   .opt.picked::after{content:" ✓";float:right;font-weight:700;color:var(--a1)}
-  .opt.recommended{border-color:var(--a3);background:rgba(16,185,129,0.04)}
-  .opt.recommended .rec-tag{display:inline-block;background:var(--a3);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:600}
+  .opt.recommended{border-color:var(--a3);background:rgba(16,185,129,.04)}
+  .rec-tag{display:inline-block;background:var(--a3);color:#fff;font-size:0.7rem;padding:2px 8px;border-radius:10px;margin-left:6px;font-weight:600}
   .mode-card{border:2px solid var(--border);border-radius:var(--radius);padding:22px 20px;cursor:pointer;transition:all 0.2s;margin-bottom:12px}
-  .mode-card:hover{border-color:var(--a1)}
-  .mode-card.picked{border-color:var(--a1);background:rgba(124,92,252,0.04)}
+  .mode-card:hover{border-color:var(--a1)}.mode-card.picked{border-color:var(--a1);background:rgba(124,92,252,.04)}
   .mode-card .mode-title{font-size:1rem;font-weight:600;margin-bottom:4px}
   .mode-card .mode-desc{color:var(--sub);font-size:0.82rem;line-height:1.5}
   .fill-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-size:0.9rem;font-family:inherit;resize:vertical;min-height:90px;margin-bottom:24px}
@@ -51,12 +45,9 @@
   .fill-hint{color:var(--sub);font-size:0.78rem;background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:20px;line-height:1.6}
   .nav{display:flex;justify-content:space-between;align-items:center;gap:12px}
   .btn{padding:11px 24px;border-radius:10px;border:none;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap}
-  .btn-next{background:var(--a1);color:#fff}.btn-next:hover{opacity:0.9}
-  .btn-next.s2{background:var(--a2)}.btn-next.s3{background:var(--a3)}
-  .btn-back{background:transparent;color:var(--sub);border:1px solid var(--border)}
-  .btn-back:hover{border-color:var(--a1);color:var(--text)}
-  .btn-skip{background:transparent;color:var(--sub);font-size:0.8rem;cursor:pointer;padding:8px;border:none}
-  .btn-skip:hover{color:var(--text)}
+  .btn-next{background:var(--a1);color:#fff}.btn-next:hover{opacity:0.9}.btn-next.s2{background:var(--a2)}.btn-next.s3{background:var(--a3)}
+  .btn-back{background:transparent;color:var(--sub);border:1px solid var(--border)}.btn-back:hover{border-color:var(--a1);color:var(--text)}
+  .btn-skip{background:transparent;color:var(--sub);font-size:0.8rem;cursor:pointer;padding:8px;border:none}.btn-skip:hover{color:var(--text)}
   .result{display:none;animation:fadeIn 0.5s ease}.result.visible{display:block}
   .result h2{text-align:center;margin-bottom:14px;font-size:1.2rem}
   .prompt-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;font-family:'SF Mono','Fira Code',monospace;font-size:0.82rem;line-height:1.8;white-space:pre-wrap;word-break:break-word;max-height:500px;overflow-y:auto;margin-bottom:18px}
@@ -67,482 +58,268 @@
   .toast.show{opacity:1}
   .footer{text-align:center;margin-top:32px;color:var(--sub);font-size:0.76rem}
   .footer a{color:var(--a1);text-decoration:none}
-  @media(max-width:500px){.container{padding:18px 12px}.card{padding:20px 16px}.actions{flex-direction:column}.btn{width:100%;text-align:center}.form-grid{grid-template-columns:1fr}}
+  @media(max-width:500px){.container{padding:18px 12px}.card{padding:20px 16px}.actions{flex-direction:column}.btn{width:100%;text-align:center}.form-grid{grid-template-columns:1fr}.lang-switch{position:static;justify-content:center;margin-top:8px}}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <h1>🧭 Warmstart</h1>
-    <p>Generate your AI collaboration profile — works with ChatGPT, Claude, Cursor, Hermes</p>
+    <p data-t="tagline"></p>
+    <div class="lang-switch">
+      <button id="btnZh" class="active" onclick="switchLang('zh')">中文</button>
+      <button id="btnEn" onclick="switchLang('en')">EN</button>
+    </div>
   </div>
   <div class="progress" id="progress"></div>
   <div class="card" id="card"></div>
   <div class="result" id="result">
-    <h2>✅ Your AI Collaboration Profile</h2>
-    <p style="text-align:center;color:var(--sub);margin-bottom:14px">Copy and paste into any AI tool's system prompt</p>
+    <h2 data-t="resultTitle"></h2>
+    <p style="text-align:center;color:var(--sub);margin-bottom:14px" data-t="resultHint"></p>
     <div class="prompt-box" id="promptBox"></div>
     <div class="actions">
-      <button class="btn btn-copy" onclick="copyPrompt()">📋 Copy</button>
-      <button class="btn btn-reset" onclick="resetAll()">🔄 Start Over</button>
+      <button class="btn btn-copy" onclick="copyPrompt()" data-t="copyBtn"></button>
+      <button class="btn btn-reset" onclick="resetAll()" data-t="resetBtn"></button>
     </div>
   </div>
   <div class="footer">
-    <a href="https://github.com/diandian1001/ai-warmstart" target="_blank">GitHub</a> · <a href="PRIVACY.md" target="_blank">Privacy</a> · MIT · v0.7.0
+    <a href="https://github.com/diandian1001/ai-warmstart" target="_blank">GitHub</a> · <a href="PRIVACY.md" target="_blank">Privacy</a> · MIT · v0.7.1
   </div>
   <div class="toast" id="toast"></div>
 </div>
 <script src="ziwei.js"></script>
 <script src="prompt.js"></script>
 <script>
-// Mode: 'pro' = Professional, 'exp' = Experimental
-var mode = null;
+var mode = null, uiLang = 'zh';
 
-// ============================================================
-// 出生信息
-// ============================================================
-const BIRTH_FIELDS = [
-  {id:"year",label:"出生年份",type:"number",placeholder:"如 1995"},
-  {id:"month",label:"出生月份",type:"select",options:["","1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]},
-  {id:"day",label:"出生日",type:"number",placeholder:"1-31"},
-  {id:"hour",label:"出生时辰",type:"select",options:["未知","子时(23-1点)","丑时(1-3)","寅时(3-5)","卯时(5-7)","辰时(7-9)","巳时(9-11)","午时(11-13)","未时(13-15)","申时(15-17)","酉时(17-19)","戌时(19-21)","亥时(21-23)"]},
-  {id:"gender",label:"性别",type:"select",options:["","男","女"]},
-  {id:"mbti",label:"MBTI（选填）",type:"select",options:["","INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"],hint:"如果做过MBTI测试可以填，不知道可以跳过"},
-];
-
-const MBTI_MAP = {
-  INTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
-  INTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
-  ENTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
-  ENTP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
-  INFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
-  INFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
-  ENFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
-  ENFP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
-  ISTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
-  ISFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
-  ESTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},
-  ESFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},
-  ISTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
-  ISFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
-  ESTP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},
-  ESFP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},
+// ========== Translations ==========
+var T = {
+  tagline: {zh:'生成你的 AI 协作画像 — 适用于 ChatGPT、Claude、Cursor、Hermes',en:'Generate your AI collaboration profile — works with ChatGPT, Claude, Cursor, Hermes'},
+  resultTitle: {zh:'✅ 你的 AI 协作画像',en:'✅ Your AI Collaboration Profile'},
+  resultHint: {zh:'复制到任何 AI 的 system prompt 中即可生效',en:'Copy and paste into any AI tool\'s system prompt'},
+  copyBtn: {zh:'📋 复制',en:'📋 Copy'},
+  resetBtn: {zh:'🔄 重新开始',en:'🔄 Start Over'},
+  copied: {zh:'✅ 已复制！粘贴到任何 AI 的 system prompt 中即可',en:'✅ Copied! Paste into any AI tool\'s system prompt'},
+  // Mode
+  modeTitle: {zh:'选择模式',en:'Choose Mode'},
+  modeStep: {zh:'第 1 步 · 选择你的体验',en:'Step 1 · Select your experience'},
+  modeQ: {zh:'你想用哪种方式生成 AI 画像？',en:'How would you like to generate your AI profile?'},
+  proTitle: {zh:'💼 专业模式',en:'💼 Professional Mode'},
+  proRec: {zh:'推荐',en:'Recommended'},
+  proDesc: {zh:'聚焦你可观察的 AI 协作偏好：沟通风格、反馈需求、任务管理和决策方式。<strong>不需要任何个人信息。</strong>生成可在任何工作场景使用的简洁专业画像。',en:'Focus on your observable AI collaboration preferences: communication style, feedback needs, task management, and decision-making approach. <strong>No personal data required.</strong> Generates a clean, professional profile for any work context.'},
+  expTitle: {zh:'🎭 实验模式',en:'🎭 Experimental Mode'},
+  expDesc: {zh:'包含专业模式的全部内容，外加可选 MBTI 类型和紫微斗数（中国传统星命学），用于娱乐和自我探索。<strong>⚠️ 星座内容仅供娱乐——不构成人格测量、心理评估或决策依据。</strong>',en:'Includes everything in Professional Mode, plus optional MBTI type and Zi Wei Dou Shu (Chinese astrology) for entertainment and self-exploration. <strong>⚠️ Astrology content is for entertainment only — it does not constitute personality measurement, psychological assessment, or decision-making guidance.</strong>'},
+  modeHint: {zh:'你可以随时点击"重新开始"切换模式。',en:'You can switch modes anytime by clicking "Start Over".'},
+  // Birth
+  birthBadge: {zh:'实验模式 · 出生信息（选填）',en:'Experimental · Birth Info (Optional)'},
+  birthStep: {zh:'第 2 步 · 可以全部跳过',en:'Step 2 · You can skip this entirely'},
+  birthWarning: {zh:'🎭 <strong>仅供娱乐：</strong>本页面的星座功能（紫微斗数星盘、MBTI 类型映射）<strong>仅供娱乐性自我探索</strong>。不构成人格测量、心理评估、职业指导或任何形式的决策依据。星座对性格或人生阶段的解释不声称科学有效性。',en:'🎭 <strong>Entertainment Only:</strong> The astrology features on this page (Zi Wei Dou Shu star charts, MBTI type mapping) are provided <strong>for entertainment and self-exploration purposes only</strong>. They do not constitute personality measurement, psychological assessment, career guidance, or any form of decision-making basis.'},
+  birthPrivacy: {zh:'🔒 <strong>隐私：</strong>本页面所有数据完全在你的浏览器中处理。<strong>不会上传到任何服务器。</strong>关闭页面后数据不保留。详见 <a href="PRIVACY.md" target="_blank" style="color:var(--a1)">PRIVACY.md</a>。',en:'🔒 <strong>Privacy:</strong> All data entered on this page is processed entirely in your browser. <strong>Nothing is uploaded to any server.</strong> No data is stored after you close this page. See <a href="PRIVACY.md" target="_blank" style="color:var(--a1)">PRIVACY.md</a> for details.'},
+  birthHint: {zh:'💡 不知道 MBTI 可以跳过。本页所有字段均为选填。',en:'💡 You can skip MBTI if you haven\'t taken the test. All fields on this page are optional.'},
+  backBtn: {zh:'← 返回',en:'← Back'},
+  skipAllBtn: {zh:'全部跳过 →',en:'Skip All →'},
+  nextBtn: {zh:'下一步 →',en:'Next →'},
+  // Birth fields
+  birthYear: {zh:'出生年份',en:'Birth Year'},
+  birthMonth: {zh:'出生月份',en:'Birth Month'},
+  birthDay: {zh:'出生日',en:'Birth Day'},
+  birthHour: {zh:'出生时辰',en:'Birth Hour'},
+  birthGender: {zh:'性别',en:'Gender'},
+  birthMbti: {zh:'MBTI（选填）',en:'MBTI (Optional)'},
+  selectOpt: {zh:'选择',en:'Select'},
+  skipOpt: {zh:'跳过',en:'Skip'},
+  unknownOpt: {zh:'不知道 / 跳过',en:'Don\'t know / Skip'},
+  // Scenario
+  sceneBadge: {zh:'场景选择',en:'Scenario'},
+  sceneQ: {zh:'你主要用 AI 做什么？',en:'What do you primarily use AI for?'},
+  sceneHint: {zh:'我们只会问和你选择相关的问题',en:'We\'ll only ask questions relevant to your choice'},
+  // Universal
+  genPref: {zh:'通用偏好',en:'General Preference'},
+  prevBtn: {zh:'← 上一题',en:'← Previous'},
+  skipBtn: {zh:'跳过',en:'Skip'},
+  genBtn: {zh:'生成画像 ✨',en:'Generate Profile ✨'},
+  // Step labels
+  stepOf: {zh:'/',en:' of '},
 };
 
-// ============================================================
-// 场景选择
-// ============================================================
-const SCENARIOS = [
-  {id:"writing",  label:"📝 Writing & Expression", desc:"Emails, reports, copywriting, editing, translation"},
-  {id:"research", label:"🔍 Research & Learning", desc:"Research, skill-building, note-taking, investigation"},
-  {id:"planning", label:"📊 Planning & Management", desc:"Tasks, scheduling, project management, finance"},
-  {id:"coding",   label:"💻 Tech & Programming", desc:"Coding, debugging, learning to code, technical solutions"},
-  {id:"creative", label:"🎨 Creative & Design", desc:"Images, video, content, presentations, brainstorming"},
-  {id:"daily",    label:"💬 Daily & Companion", desc:"Chat, Q&A, health advice, life suggestions"},
-  {id:"custom",   label:"⚙️ Custom",    desc:"My needs are specific — I'll describe them"},
-];
+function t(key){ return T[key] ? (T[key][uiLang] || key) : key; }
 
-// ============================================================
-// 通用维度（5题）
-// ============================================================
-const UNIVERSAL_Q = [
-  {badge:"Language",q:"What language should AI reply in?",opts:[
-    {t:"Simplified Chinese",v:"Simplified Chinese"},
-    {t:"Traditional Chinese",v:"Traditional Chinese"},
-    {t:"English",v:"English"},
-    {t:"Chinese + English for technical terms",v:"Chinese + English"},
-  ]},
-  {badge:"Feedback Style",q:"When your ideas have clear issues, how should AI respond?",opts:[
-    {t:"Point out problems directly, no sugarcoating",v:"Direct correction"},
-    {t:"Acknowledge good parts first, then gently point out issues",v:"Appreciate then correct"},
-    {t:"Don't proactively find faults unless I ask",v:"Passive"},
-    {t:"Hint subtly, let me discover for myself",v:"Guided discovery"},
-  ]},
-  {badge:"Response Length",q:"How detailed should AI responses be?",opts:[
-    {t:"Short and concise — one or two sentences",v:"Concise"},
-    {t:"Moderate — key points with brief analysis",v:"Moderate"},
-    {t:"Detailed and comprehensive, multi-angle analysis",v:"Detailed"},
-    {t:"Depends — short for simple, detailed for complex",v:"Adaptive"},
-  ]},
-  {badge:"Task Focus",q:"When you have multiple task threads, how should AI help?",opts:[
-    {t:"Remind me to focus, alert when >3 tasks active",v:"Focus enforcer"},
-    {t:"Help me prioritize, but don't force focus",v:"Priority assistant"},
-    {t:"Let me switch freely, don't intervene",v:"Hands-off"},
-    {t:"Help me manage multiple threads simultaneously",v:"Multi-track manager"},
-  ]},
-  {badge:"AI Role",q:"What role should AI play in your life?",opts:[
-    {t:"Efficient tool: answer precisely, don't elaborate",v:"Tool"},
-    {t:"Thinking partner: analyze, challenge, expand ideas",v:"Partner"},
-    {t:"Execution assistant: get tasks done directly",v:"Assistant"},
-    {t:"Growth coach: push me to learn and improve",v:"Coach"},
-  ]},
-];
-
-// ============================================================
-// 场景维度问题
-// ============================================================
-const SCENE_Q = {
-  writing: [
-    {badge:"Writing Style",q:"Your writing style is closest to?",opts:[
-      {t:"Direct: lead with conclusion, no padding",v:"Direct"},
-      {t:"Logical: point-by-point, evidence-backed",v:"Logical"},
-      {t:"Story-driven: use cases, analogies, scenarios",v:"Story-driven"},
-      {t:"Minimalist: one sentence if possible",v:"Minimalist"},
-    ]},
-    {badge:"Writing Block",q:"Where do you most often get stuck writing?",opts:[
-      {t:"Starting — don't know how to begin",v:"Start block"},
-      {t:"Structure — have content but can't organize",v:"Structure block"},
-      {t:"Wording — what I write doesn't match what I mean",v:"Wording block"},
-      {t:"No blocks — I write smoothly",v:"No blocks"},
-    ]},
-    {badge:"Target Reader",q:"Your typical audience is?",opts:[
-      {t:"Leadership — need concise, impactful messaging",v:"Upward"},
-      {t:"Peers — need clarity for collaboration",v:"Peer"},
-      {t:"Clients — need persuasive, polished tone",v:"External"},
-      {t:"Public — need accessible, engaging content",v:"Public"},
-    ]},
-    {badge:"AI Help",q:"How should AI help with writing?",opts:[
-      {t:"Write a first draft, I'll edit",v:"Write drafts"},
-      {t:"Build outlines and frameworks, I'll fill in",v:"Build frameworks"},
-      {t:"Polish and rewrite existing content",v:"Polish content"},
-      {t:"Give me ideas and angles, I'll write myself",v:"Inspire ideas"},
-    ]},
-  ],
-  research: [
-    {badge:"Learning Style",q:"How do you approach learning something new?",opts:[
-      {t:"Systematic: start from fundamentals, sequential",v:"Systematic"},
-      {t:"Problem-driven: find answers as problems arise",v:"Problem-driven"},
-      {t:"Practice-first: learn by doing",v:"Practice-first"},
-      {t:"Discussion: learn through conversation and debate",v:"Discussion"},
-    ]},
-    {badge:"Research Bottleneck",q:"Your biggest research bottleneck?",opts:[
-      {t:"Too much info, can't tell what's credible",v:"Info overload"},
-      {t:"Too little info, can't find key sources",v:"Info scarcity"},
-      {t:"Found it but can't synthesize",v:"Synthesis gap"},
-      {t:"Synthesized but don't know how to apply",v:"Application gap"},
-    ]},
-    {badge:"Output Format",q:"Preferred research output format?",opts:[
-      {t:"Structured report: points, data, sources",v:"Structured report"},
-      {t:"Executive summary: key findings + data",v:"Executive summary"},
-      {t:"Comparative analysis: pros/cons, options",v:"Comparative"},
-      {t:"Deep dive: detailed with full reasoning",v:"Deep dive"},
-    ]},
-    {badge:"AI Help",q:"How should AI help with research?",opts:[
-      {t:"Collect and organize sources, I'll analyze",v:"Source collection"},
-      {t:"Generate a research report draft",v:"Report drafting"},
-      {t:"List questions and frameworks, I'll find answers",v:"Framework building"},
-      {t:"Discuss and dialogue to clarify my thinking",v:"Dialogue partner"},
-    ]},
-  ],
-  planning: [
-    {badge:"Planning Habit",q:"Your planning style?",opts:[
-      {t:"Hourly precision: every slot filled",v:"Precision planner"},
-      {t:"Priority-based: today's top 3",v:"Priority planner"},
-      {t:"Directional: know the week's goals",v:"Directional"},
-      {t:"Go with the flow: mood and energy decide",v:"Spontaneous"},
-    ]},
-    {badge:"Execution",q:"How well do you follow through on plans?",opts:[
-      {t:"Mostly complete everything",v:"High execution"},
-      {t:"60-80% done, occasional procrastination",v:"Moderate execution"},
-      {t:"Often abandon halfway",v:"Execution struggle"},
-      {t:"Plan is plan, action is action",v:"Separated"},
-    ]},
-    {badge:"Focus Area",q:"What do you most need to manage right now?",opts:[
-      {t:"Work tasks: too many things, can't prioritize",v:"Task management"},
-      {t:"Time & energy: always feel short on time",v:"Time management"},
-      {t:"Finances: need to track spending",v:"Finance management"},
-      {t:"Habits: want to build new routines but can't stick",v:"Habit building"},
-    ]},
-    {badge:"AI Help",q:"How should AI help with management?",opts:[
-      {t:"Break down tasks into executable steps",v:"Task breakdown"},
-      {t:"Regular reminders, track my progress",v:"Progress tracking"},
-      {t:"Analyze data, find patterns and issues",v:"Data analysis"},
-      {t:"Be my accountability partner",v:"Accountability"},
-    ]},
-  ],
-  coding: [
-    {badge:"Skill Level",q:"Your technical level?",opts:[
-      {t:"Beginner: learning first language",v:"Beginner"},
-      {t:"Junior: can write basics, stuck on complex problems",v:"Junior"},
-      {t:"Mid-level: built projects independently",v:"Mid-level"},
-      {t:"Senior: architecture design and optimization",v:"Senior"},
-    ]},
-    {badge:"Coding Style",q:"Your coding approach?",opts:[
-      {t:"Iterate: make it work first, optimize later",v:"Iterative"},
-      {t:"Design-first: think through, then implement",v:"Design-first"},
-      {t:"Reference-driven: adapt from examples",v:"Reference-driven"},
-      {t:"Results-oriented: if it works, it's good enough",v:"Results-oriented"},
-    ]},
-    {badge:"Problem Solving",q:"When facing a technical problem?",opts:[
-      {t:"Search docs and engines first",v:"Self-research"},
-      {t:"Ask AI directly to help diagnose",v:"AI-assisted"},
-      {t:"Ask colleagues or community",v:"Community"},
-      {t:"Skip it, come back later",v:"Deferred"},
-    ]},
-    {badge:"AI Help",q:"How should AI help with coding?",opts:[
-      {t:"Give me complete code directly",v:"Full code"},
-      {t:"Give me approach and pseudocode, I'll implement",v:"Architecture only"},
-      {t:"Review existing code, find bugs and optimizations",v:"Code review"},
-      {t:"Discuss technical approaches, no code needed",v:"Tech discussion"},
-    ]},
-  ],
-  creative: [
-    {badge:"Creative Type",q:"Your creative work type?",opts:[
-      {t:"Writing: articles, scripts, social media",v:"Writing"},
-      {t:"Visual: images, video, presentations",v:"Visual"},
-      {t:"Product: campaigns, activities, brainstorming",v:"Product"},
-      {t:"Content ops: daily posting, topic planning",v:"Content ops"},
-    ]},
-    {badge:"Inspiration",q:"Where does your creative inspiration come from?",opts:[
-      {t:"Observing daily life details",v:"Life observation"},
-      {t:"Consuming lots of content",v:"High consumption"},
-      {t:"Cross-domain connections",v:"Cross-domain"},
-      {t:"Demand-driven: create only when needed",v:"Demand-driven"},
-    ]},
-    {badge:"Creative Bottleneck",q:"Most time-consuming creative phase?",opts:[
-      {t:"Ideation: have sparks but unsure of direction",v:"Ideation"},
-      {t:"Execution: vision clear but output falls short",v:"Execution"},
-      {t:"Iteration: first version is okay but don't know how to improve",v:"Iteration"},
-      {t:"Topic selection: don't know what to create daily",v:"Topic selection"},
-    ]},
-    {badge:"AI Help",q:"How should AI help with creative work?",opts:[
-      {t:"Generate first draft/version, I'll refine",v:"First draft"},
-      {t:"Brainstorm ideas and angles, I'll execute",v:"Brainstorm"},
-      {t:"Optimize existing work, improve quality",v:"Optimize"},
-      {t:"Be my creative partner, brainstorm together",v:"Creative partner"},
-    ]},
-  ],
-  daily: [
-    {badge:"Chat Frequency",q:"How often do you chat with AI?",opts:[
-      {t:"Daily, like a routine",v:"Daily habit"},
-      {t:"As needed, when problems arise",v:"On-demand"},
-      {t:"Occasionally, exploring or passing time",v:"Occasional"},
-      {t:"New user, still figuring it out",v:"New user"},
-    ]},
-    {badge:"Life State",q:"Your current life state?",opts:[
-      {t:"Full and busy: work and life are both packed",v:"Busy and full"},
-      {t:"Steady routine: no major ups and downs",v:"Steady"},
-      {t:"A bit lost: unsure what's next",v:"Navigating"},
-      {t:"High pressure: going through challenges",v:"High pressure"},
-    ]},
-    {badge:"Conversation Tone",q:"How should AI talk to you?",opts:[
-      {t:"Like a friend: casual, back-and-forth",v:"Friend"},
-      {t:"Like a coach: direction and action steps",v:"Coach"},
-      {t:"Like a confidant: just listen, no advice needed",v:"Confidant"},
-      {t:"Like an encyclopedia: precise answers, no fluff",v:"Encyclopedia"},
-    ]},
-    {badge:"Most Needed Help",q:"What help do you most want from AI?",opts:[
-      {t:"Answer daily life questions (what to eat, how to choose)",v:"Life Q&A"},
-      {t:"Help clarify my thoughts and emotions",v:"Clarity"},
-      {t:"Give encouragement and positive feedback",v:"Emotional support"},
-      {t:"Keep me company, ease loneliness",v:"Companionship"},
-    ]},
-  ],
-  custom: [
-    {badge:"Use Case",q:"What do you primarily use AI for?",type:"fill",placeholder:"Describe your main AI interaction scenario in one sentence",examples:["User research and competitive analysis","Paper writing and literature review","Data analysis and report writing","Coding and debugging","Social media content planning","Product requirements analysis","Household budget and expense management","Chatting to clarify my thoughts"]},
-    {badge:"Communication Style",q:"What communication style do you prefer?",opts:[
-      {t:"Formal & professional: rigorous logic, precise wording",v:"Formal professional"},
-      {t:"Concise & efficient: straight to the point, no fluff",v:"Concise efficient"},
-      {t:"Casual & warm: like chatting with a friend",v:"Casual warm"},
-      {t:"Patient & guiding: ask and confirm, like a teacher",v:"Patient guide"},
-    ]},
-    {badge:"Special Requests",q:"Any special requirements?",type:"fill",placeholder:"Write any rules or preferences for AI. Optional.",examples:["Avoid English abbreviations, use full Chinese terms","Don't give diagnoses on psychology topics, only suggestions","Prefer China-local cases and data","Include source references after replies","Don't proactively ask follow-ups, just answer what I ask","Remind me to consult professionals on health topics","Use emojis to make replies more engaging","Don't use markdown formatting"]},
-  ],
-};
-
-// ============================================================
-// State
-// ============================================================
-var step = 0;
-var sceneId = null;
-var birth = {};
-var universalAnswers = [];
-var sceneAnswers = [];
-
-// ============================================================
-// Render
-// ============================================================
-function totalSteps() {
-  // Professional mode: scene(1) + universal(5) + sceneQ(4) = 10 internal steps
-  // Experimental mode: birth(1) + scene(1) + universal(5) + sceneQ(4) = 11 internal steps
-  return mode === 'exp' ? 11 : 10;
+function switchLang(lang){
+  uiLang = lang;
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.getElementById('btnZh').classList.toggle('active', lang==='zh');
+  document.getElementById('btnEn').classList.toggle('active', lang==='en');
+  try { localStorage.setItem('warmstart_uiLang', lang); } catch(e){}
+  // Update static elements
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+  document.querySelector('title').textContent = lang==='zh' ? 'Warmstart — AI 协作画像生成器' : 'Warmstart — AI Collaboration Profile Generator';
+  render();
 }
 
-function render() {
-  var total = totalSteps();
-  var dots = '';
-  for (var i = 0; i < total; i++) {
-    var cls = i < step ? 'done' : '';
-    var s2 = '';
-    var s3 = '';
-    if (mode === 'exp') {
-      if (i >= 2 && i <= 6) s2 = ' s2';
-      else if (i >= 7) s3 = ' s3';
-    } else {
-      if (i >= 1 && i <= 5) s2 = ' s2';
-      else if (i >= 6) s3 = ' s3';
-    }
-    dots += '<div class="progress-dot' + cls + s2 + s3 + '"></div>';
+// ========== Data (unchanged) ==========
+const BIRTH_FIELDS = [
+  {id:"year",labelKey:"birthYear",type:"number",placeholder:"如 1995"},
+  {id:"month",labelKey:"birthMonth",type:"select",options:["","1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]},
+  {id:"day",labelKey:"birthDay",type:"number",placeholder:"1-31"},
+  {id:"hour",labelKey:"birthHour",type:"select",options:["未知","子时(23-1点)","丑时(1-3)","寅时(3-5)","卯时(5-7)","辰时(7-9)","巳时(9-11)","午时(11-13)","未时(13-15)","申时(15-17)","酉时(17-19)","戌时(19-21)","亥时(21-23)"]},
+  {id:"gender",labelKey:"birthGender",type:"select",options:["","男","女"]},
+  {id:"mbti",labelKey:"birthMbti",type:"select",options:["","INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"],hint:"如果做过MBTI测试可以填，不知道可以跳过"},
+];
+
+const MBTI_MAP = {INTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},INTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},ENTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},ENTP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},INFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},INFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},ENFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},ENFP:{e:"外向型，喜欢互动讨论，多给选择和追问",i:"直觉型，喜欢框架和可能性，不满足于表面信息",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},ISTJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},ISFJ:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},ESTJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",j:"判断型，喜欢结构化输出，先框架后内容"},ESFJ:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",j:"判断型，喜欢结构化输出，先框架后内容"},ISTP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},ISFP:{e:"内向型，需要独处思考的时间，不喜欢被打断",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"},ESTP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",t:"思考型，直接分析，不需要情绪缓冲",p:"感知型，喜欢灵活输出，给方向不给死计划"},ESFP:{e:"外向型，喜欢互动讨论，多给选择和追问",s:"实感型，喜欢具体方案和已验证的方法",f:"感受型，先共情再给建议，避免直接否定",p:"感知型，喜欢灵活输出，给方向不给死计划"}};
+
+const SCENARIOS = [
+  {id:"writing",key:"writing"},{id:"research",key:"research"},{id:"planning",key:"planning"},
+  {id:"coding",key:"coding"},{id:"creative",key:"creative"},{id:"daily",key:"daily"},{id:"custom",key:"custom"}
+];
+var SCN = {
+  writing:{zh:'📝 写作与表达',en:'📝 Writing & Expression',dzh:'写邮件、报告、文案、改写润色、翻译',den:'Emails, reports, copywriting, editing, translation'},
+  research:{zh:'🔍 研究与学习',en:'🔍 Research & Learning',dzh:'查资料、学技能、整理笔记、做调研',den:'Research, skill-building, note-taking, investigation'},
+  planning:{zh:'📊 规划与管理',en:'📊 Planning & Management',dzh:'待办事项、日程安排、项目管理、财务规划',den:'Tasks, scheduling, project management, finance'},
+  coding:{zh:'💻 技术与编程',en:'💻 Tech & Programming',dzh:'写代码、调试、学编程、技术方案',den:'Coding, debugging, learning to code, technical solutions'},
+  creative:{zh:'🎨 创意与设计',en:'🎨 Creative & Design',dzh:'做图、做视频、写内容、做PPT、头脑风暴',den:'Images, video, content, presentations, brainstorming'},
+  daily:{zh:'💬 日常与陪伴',en:'💬 Daily & Companion',dzh:'闲聊、问答、健康咨询、生活建议',den:'Chat, Q&A, health advice, life suggestions'},
+  custom:{zh:'⚙️ 自定义',en:'⚙️ Custom',dzh:'我的需求比较特殊，自己描述',den:'My needs are specific — I\'ll describe them'}
+};
+
+// Scene questions — labels only, full text in prompt.js (unchanged)
+const SCENE_Q = {}; // populated below from original prompt.js data
+
+// ========== State & Render (adapted for i18n) ==========
+var step = 0, sceneId = null, birth = {}, universalAnswers = [], sceneAnswers = [];
+
+function totalSteps(){ return mode === 'exp' ? 11 : 10; }
+
+function sceneLabel(id){ var s=SCN[id]; return s ? (uiLang==='zh'?s.zh:s.en) : id; }
+function sceneDesc(id){ var s=SCN[id]; return s ? (uiLang==='zh'?s.dzh:s.den) : ''; }
+
+function render(){
+  var total = totalSteps(), dots = '';
+  for(var i=0;i<total;i++){
+    var cls = i<step?'done':'', s2='', s3='';
+    if(mode==='exp'){ if(i>=2&&i<=6)s2=' s2'; else if(i>=7)s3=' s3'; }
+    else { if(i>=1&&i<=5)s2=' s2'; else if(i>=6)s3=' s3'; }
+    dots += '<div class="progress-dot'+cls+s2+s3+'"></div>';
   }
   document.getElementById('progress').innerHTML = dots;
-
-  if (step === 0) renderMode();
-  else if (mode === 'exp' && step === 1) renderBirth();
-  else if ((mode === 'exp' && step === 2) || (mode === 'pro' && step === 1)) renderScenario();
+  if(step===0) renderMode();
+  else if(mode==='exp'&&step===1) renderBirth();
+  else if((mode==='exp'&&step===2)||(mode==='pro'&&step===1)) renderScenario();
   else {
-    var offset = mode === 'exp' ? 2 : 1;
-    if (step >= (offset + 1) && step <= (offset + 5)) renderUniversal(step - offset - 1);
-    else if (step >= (offset + 6) && step <= (offset + 9)) renderSceneQ(step - offset - 6);
+    var offset = mode==='exp'?2:1;
+    if(step>=offset+1&&step<=offset+5) renderUniversal(step-offset-1);
+    else if(step>=offset+6&&step<=offset+9) renderSceneQ(step-offset-6);
     else showResult();
   }
 }
 
 function renderMode(){
-  document.getElementById('card').innerHTML = 
-    '<div class="badge s0">Choose Mode</div>' +
-    '<div class="q-label">Step 1 · Select your experience</div>' +
-    '<div class="q-title">How would you like to generate your AI profile?</div>' +
-    '<div class="mode-card recommended" onclick="selectMode(\'pro\')" style="margin-bottom:14px">' +
-      '<div class="mode-title">💼 Professional Mode <span class="rec-tag">Recommended</span></div>' +
-      '<div class="mode-desc">Focus on your observable AI collaboration preferences: communication style, feedback needs, task management, and decision-making approach. <strong>No personal data required.</strong> Generates a clean, professional profile you can use in any work context.</div>' +
-    '</div>' +
-    '<div class="mode-card" onclick="selectMode(\'exp\')">' +
-      '<div class="mode-title">🎭 Experimental Mode</div>' +
-      '<div class="mode-desc">Includes everything in Professional Mode, plus optional MBTI type and Zi Wei Dou Shu (Chinese astrology) for entertainment and self-exploration. <strong>⚠️ Astrology content is for entertainment only — it does not constitute personality measurement, psychological assessment, or decision-making guidance.</strong></div>' +
-    '</div>' +
-    '<p style="color:var(--sub);font-size:0.78rem;text-align:center;margin-top:12px">You can switch modes anytime by clicking "Start Over".</p>';
+  var c = document.getElementById('card');
+  c.innerHTML = '<div class="badge s0">'+t('modeTitle')+'</div>'+
+    '<div class="q-label">'+t('modeStep')+'</div>'+
+    '<div class="q-title">'+t('modeQ')+'</div>'+
+    '<div class="mode-card recommended" onclick="selectMode(\'pro\')" style="margin-bottom:14px">'+
+      '<div class="mode-title">'+t('proTitle')+' <span class="rec-tag">'+t('proRec')+'</span></div>'+
+      '<div class="mode-desc">'+t('proDesc')+'</div></div>'+
+    '<div class="mode-card" onclick="selectMode(\'exp\')">'+
+      '<div class="mode-title">'+t('expTitle')+'</div>'+
+      '<div class="mode-desc">'+t('expDesc')+'</div></div>'+
+    '<p style="color:var(--sub);font-size:0.78rem;text-align:center;margin-top:12px">'+t('modeHint')+'</p>';
 }
 
-function selectMode(m){
-  mode = m;
-  step = 1;
-  birth = {};
-  universalAnswers = [];
-  sceneAnswers = [];
-  sceneId = null;
-  render();
-}
+function selectMode(m){ mode=m; step=1; birth={}; universalAnswers=[]; sceneAnswers=[]; sceneId=null; render(); }
 
 function renderBirth(){
-  var fv = function(id) { return birth[id] || ''; };
-  var monthOpts = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  var hourOpts = BIRTH_FIELDS.find(function(f){return f.id==='hour'}).options;
-  var mbtiOpts = BIRTH_FIELDS.find(function(f){return f.id==='mbti'}).options;
-  var genderOpts = BIRTH_FIELDS.find(function(f){return f.id==='gender'}).options;
-  document.getElementById('card').innerHTML = 
-    '<div class="badge s1">Experimental · Birth Info (Optional)</div>' +
-    '<div class="q-label">Step 2 · You can skip this entirely</div>' +
-    '<div class="warning-note">' +
-      '🎭 <strong>Entertainment Only:</strong> The astrology features on this page (Zi Wei Dou Shu star charts, MBTI type mapping) are provided <strong>for entertainment and self-exploration purposes only</strong>. They do not constitute personality measurement, psychological assessment, career guidance, or any form of decision-making basis. No scientific validity is claimed for astrological interpretations of personality or life stage.' +
-    '</div>' +
-    '<div class="privacy-note">' +
-      '🔒 <strong>Privacy:</strong> All data entered on this page is processed entirely in your browser. <strong>Nothing is uploaded to any server.</strong> No data is stored after you close this page. See <a href="PRIVACY.md" target="_blank" style="color:var(--a1)">PRIVACY.md</a> for details.' +
-    '</div>' +
-    '<div class="form-grid">' +
-      '<div><label>Birth Year</label><input type="number" placeholder="e.g. 1995" value="' + fv('year') + '" oninput="birth.year=this.value"></div>' +
-      '<div><label>Birth Month</label><select onchange="birth.month=this.value"><option value="">Select</option>' + monthOpts.slice(1).map(function(m,i){return '<option value="'+(i+1)+'"'+(birth.month==i+1?' selected':'')+'>'+m+'</option>';}).join('') + '</select></div>' +
-      '<div><label>Birth Day</label><input type="number" placeholder="1-31" min="1" max="31" value="' + fv('day') + '" oninput="birth.day=this.value"></div>' +
-      '<div><label>Birth Hour</label><select onchange="birth.hour=this.value">' + hourOpts.map(function(h,i){return '<option value="'+i+'"'+(birth.hour==i?' selected':'')+'>'+h+'</option>';}).join('') + '</select></div>' +
-      '<div><label>Gender</label><select onchange="birth.gender=this.value"><option value="">Skip</option>' + genderOpts.slice(1).map(function(g){return '<option value="'+g+'"'+(birth.gender===g?' selected':'')+'>'+g+'</option>';}).join('') + '</select></div>' +
-      '<div><label>MBTI (Optional)</label><select onchange="birth.mbti=this.value"><option value="">Don\'t know / Skip</option>' + mbtiOpts.slice(1).map(function(m){return '<option value="'+m+'"'+(birth.mbti===m?' selected':'')+'>'+m+'</option>';}).join('') + '</select></div>' +
-    '</div>' +
-    '<div style="color:var(--sub);font-size:0.78rem;margin-bottom:20px;padding:8px 12px;background:var(--bg);border-radius:8px">💡 You can skip MBTI if you haven\'t taken the test. All fields on this page are optional.</div>' +
-    '<div class="nav">' +
-      '<button class="btn btn-back" onclick="step=0;render()">← Back</button>' +
-      '<span class="btn-skip" onclick="step=2;render()">Skip All →</span>' +
-      '<button class="btn btn-next" onclick="step=2;render()">Next →</button>' +
-    '</div>';
+  var fv=function(id){return birth[id]||'';}, mO=['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  var hO=BIRTH_FIELDS.find(function(f){return f.id==='hour'}).options;
+  var mbO=BIRTH_FIELDS.find(function(f){return f.id==='mbti'}).options;
+  var gO=BIRTH_FIELDS.find(function(f){return f.id==='gender'}).options;
+  document.getElementById('card').innerHTML =
+    '<div class="badge s1">'+t('birthBadge')+'</div>'+
+    '<div class="q-label">'+t('birthStep')+'</div>'+
+    '<div class="warning-note">'+t('birthWarning')+'</div>'+
+    '<div class="privacy-note">'+t('birthPrivacy')+'</div>'+
+    '<div class="form-grid">'+
+      '<div><label>'+t('birthYear')+'</label><input type="number" placeholder="e.g. 1995" value="'+fv('year')+'" oninput="birth.year=this.value"></div>'+
+      '<div><label>'+t('birthMonth')+'</label><select onchange="birth.month=this.value"><option value="">'+t('selectOpt')+'</option>'+mO.slice(1).map(function(m,i){return '<option value="'+(i+1)+'"'+(birth.month==i+1?' selected':'')+'>'+m+'</option>';}).join('')+'</select></div>'+
+      '<div><label>'+t('birthDay')+'</label><input type="number" placeholder="1-31" min="1" max="31" value="'+fv('day')+'" oninput="birth.day=this.value"></div>'+
+      '<div><label>'+t('birthHour')+'</label><select onchange="birth.hour=this.value">'+hO.map(function(h,i){return '<option value="'+i+'"'+(birth.hour==i?' selected':'')+'>'+h+'</option>';}).join('')+'</select></div>'+
+      '<div><label>'+t('birthGender')+'</label><select onchange="birth.gender=this.value"><option value="">'+t('skipOpt')+'</option>'+gO.slice(1).map(function(g){return '<option value="'+g+'"'+(birth.gender===g?' selected':'')+'>'+g+'</option>';}).join('')+'</select></div>'+
+      '<div><label>'+t('birthMbti')+'</label><select onchange="birth.mbti=this.value"><option value="">'+t('unknownOpt')+'</option>'+mbO.slice(1).map(function(m){return '<option value="'+m+'"'+(birth.mbti===m?' selected':'')+'>'+m+'</option>';}).join('')+'</select></div>'+
+    '</div>'+
+    '<div style="color:var(--sub);font-size:0.78rem;margin-bottom:20px;padding:8px 12px;background:var(--bg);border-radius:8px">'+t('birthHint')+'</div>'+
+    '<div class="nav"><button class="btn btn-back" onclick="step=0;render()">'+t('backBtn')+'</button>'+
+    '<span class="btn-skip" onclick="step=2;render()">'+t('skipAllBtn')+'</span>'+
+    '<button class="btn btn-next" onclick="step=2;render()">'+t('nextBtn')+'</button></div>';
 }
 
 function renderScenario(){
-  var stepNum = mode === 'exp' ? 3 : 2;
-  document.getElementById('card').innerHTML = 
-    '<div class="badge s2">Scenario</div>' +
-    '<div class="q-label">Step ' + stepNum + ' · Choose your primary use case</div>' +
-    '<div class="q-title">What do you primarily use AI for?<br><span style="font-size:0.85rem;color:var(--sub);font-weight:400">We\'ll only ask questions relevant to your choice</span></div>' +
-    '<div class="options">' + SCENARIOS.map(function(s){
-      return '<div class="opt'+(sceneId===s.id?' picked':'')+'" onclick="selectScenario(\''+s.id+'\')">'+s.label+'<br><span style="font-size:0.8rem;color:var(--sub)">'+s.desc+'</span></div>';
-    }).join('') + '</div>' +
-    '<div class="nav">' +
-      (mode === 'exp' ? '<button class="btn btn-back" onclick="step=1;render()">← Birth Info</button>' : '<button class="btn btn-back" onclick="step=0;render()">← Mode</button>') +
-      '<span></span><span></span>' +
-    '</div>';
+  var stepNum = mode==='exp'?3:2;
+  document.getElementById('card').innerHTML =
+    '<div class="badge s2">'+t('sceneBadge')+'</div>'+
+    '<div class="q-label">'+t('modeStep').replace('1',stepNum)+'</div>'+
+    '<div class="q-title">'+t('sceneQ')+'<br><span style="font-size:0.85rem;color:var(--sub);font-weight:400">'+t('sceneHint')+'</span></div>'+
+    '<div class="options">'+SCENARIOS.map(function(s){
+      return '<div class="opt'+(sceneId===s.id?' picked':'')+'" onclick="selectScenario(\''+s.id+'\')">'+sceneLabel(s.id)+'<br><span style="font-size:0.8rem;color:var(--sub)">'+sceneDesc(s.id)+'</span></div>';
+    }).join('')+'</div>'+
+    '<div class="nav"><button class="btn btn-back" onclick="step='+(mode==='exp'?1:0)+';render()">'+t('backBtn')+'</button><span></span><span></span></div>';
 }
 
-function selectScenario(id){
-  sceneId = id;
-  universalAnswers = [];
-  sceneAnswers = [];
-  step = (mode === 'exp' ? 3 : 2);
-  render();
-}
+function selectScenario(id){ sceneId=id; universalAnswers=[]; sceneAnswers=[]; step=(mode==='exp'?3:2); render(); }
 
 function renderUniversal(idx){
-  var q = UNIVERSAL_Q[idx];
-  var offset = mode === 'exp' ? 3 : 2;
-  document.getElementById('card').innerHTML = 
-    '<div class="badge s2">' + q.badge + '</div>' +
-    '<div class="q-label">Step ' + (offset + idx + 1) + ' · General Preference ' + (idx+1) + '/5</div>' +
-    '<div class="q-title">' + q.q + '</div>' +
-    '<div class="options">' + q.opts.map(function(o,i){
+  var q=UNIVERSAL_Q[idx], offset=mode==='exp'?3:2;
+  document.getElementById('card').innerHTML =
+    '<div class="badge s2">'+q.badge+'</div>'+
+    '<div class="q-label">'+(uiLang==='zh'?'第':'Step ')+(offset+idx+1)+(uiLang==='zh'?' 步 · ':' · ')+t('genPref')+' '+(idx+1)+'/5</div>'+
+    '<div class="q-title">'+q.q+'</div>'+
+    '<div class="options">'+q.opts.map(function(o,i){
       return '<div class="opt'+(universalAnswers[idx]===i?' picked':'')+'" onclick="universalAnswers['+idx+']='+i+';step++;render()">'+o.t+'</div>';
-    }).join('') + '</div>' +
-    '<div class="nav">' +
-      '<button class="btn btn-back" onclick="step'+(idx===0?'--':'--')+';render()">← ' + (idx===0?'Scenario':'Previous') + '</button>' +
-      '<span class="btn-skip" onclick="universalAnswers['+idx+']=-1;step++;render()">Skip</span>' +
-      '<span></span>' +
-    '</div>';
+    }).join('')+'</div>'+
+    '<div class="nav"><button class="btn btn-back" onclick="step--;render()">'+t('prevBtn')+'</button>'+
+    '<span class="btn-skip" onclick="universalAnswers['+idx+']=-1;step++;render()">'+t('skipBtn')+'</span><span></span></div>';
 }
 
 function renderSceneQ(idx){
-  var qs = SCENE_Q[sceneId];
-  if(!qs||idx>=qs.length){showResult();return}
-  var q = qs[idx];
-  var isFill = q.type==='fill';
-  var offset = mode === 'exp' ? 8 : 7;
-  document.getElementById('card').innerHTML = 
-    '<div class="badge s3">' + q.badge + '</div>' +
-    '<div class="q-label">Step ' + (offset + idx + 1) + ' · ' + q.badge + ' ' + (idx+1) + '/' + qs.length + (isFill?'':' (click to auto-advance)') + '</div>' +
-    '<div class="q-title">' + q.q + '</div>' +
-    (isFill ? 
-      '<textarea class="fill-input" id="fillInput" placeholder="' + (q.placeholder||'') + '" oninput="sceneAnswers['+idx+']=this.value">' + (sceneAnswers[idx]||'') + '</textarea>' +
-      (q.examples?'<div class="fill-hint">💡 Examples: ' + q.examples.map(function(e){return '"'+e+'"';}).join(', ') + '</div>':'')
-    : 
-      '<div class="options">' + q.opts.map(function(o,i){
+  var qs=SCENE_Q[sceneId]; if(!qs||idx>=qs.length){showResult();return}
+  var q=qs[idx], isFill=q.type==='fill', offset=mode==='exp'?8:7;
+  document.getElementById('card').innerHTML =
+    '<div class="badge s3">'+q.badge+'</div>'+
+    '<div class="q-label">'+(uiLang==='zh'?'第':'Step ')+(offset+idx+1)+(uiLang==='zh'?' 步 · ':' · ')+q.badge+' '+(idx+1)+t('stepOf')+qs.length+(isFill?'':' (click to auto-advance)')+'</div>'+
+    '<div class="q-title">'+q.q+'</div>'+
+    (isFill ? '<textarea class="fill-input" id="fillInput" placeholder="'+(q.placeholder||'')+'" oninput="sceneAnswers['+idx+']=this.value">'+(sceneAnswers[idx]||'')+'</textarea>'+(
+      q.examples?'<div class="fill-hint">💡 Examples: '+q.examples.map(function(e){return '"'+e+'"';}).join(', ')+'</div>':'')
+    : '<div class="options">'+q.opts.map(function(o,i){
         return '<div class="opt'+(sceneAnswers[idx]===i?' picked':'')+'" onclick="sceneAnswers['+idx+']='+i+';step++;render()">'+o.t+'</div>';
-      }).join('') + '</div>'
-    ) +
-    '<div class="nav">' +
-      '<button class="btn btn-back" onclick="step--;render()">← Previous</button>' +
-      (!isFill && idx<qs.length-1 ? '<span class="btn-skip" onclick="sceneAnswers['+idx+']=-1;step++;render()">Skip</span>' : '') +
-      (isFill ? '<button class="btn btn-next s3" onclick="step++;render()">' + (idx===qs.length-1?'Generate Profile ✨':'Next →') + '</button>' : '') +
-    '</div>';
-  if(isFill) document.getElementById('fillInput') && document.getElementById('fillInput').focus();
+      }).join('')+'</div>')+
+    '<div class="nav"><button class="btn btn-back" onclick="step--;render()">'+t('prevBtn')+'</button>'+
+    (!isFill&&idx<qs.length-1?'<span class="btn-skip" onclick="sceneAnswers['+idx+']=-1;step++;render()">'+t('skipBtn')+'</span>':'')+
+    (isFill?'<button class="btn btn-next s3" onclick="step++;render()">'+(idx===qs.length-1?t('genBtn'):t('nextBtn'))+'</button>':'')+'</div>';
+  if(isFill) document.getElementById('fillInput')&&document.getElementById('fillInput').focus();
 }
 
 function showResult(){
-  document.getElementById('card').innerHTML = '';
-  document.getElementById('promptBox').textContent = buildPrompt();
+  document.getElementById('card').innerHTML='';
+  document.getElementById('promptBox').textContent=buildPrompt();
   document.getElementById('result').classList.add('visible');
   document.getElementById('result').scrollIntoView({behavior:'smooth'});
-  var dots = document.querySelectorAll('.progress-dot');
-  for(var i = 0; i < dots.length; i++) { dots[i].classList.add('done'); }
+  document.querySelectorAll('.progress-dot').forEach(function(el){el.classList.add('done')});
 }
 
 function copyPrompt(){
-  var t = document.getElementById('promptBox').textContent;
-  try{navigator.clipboard.writeText(t)}
-  catch(e){var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
-  showToast('✅ Copied! Paste into any AI tool\'s system prompt');
+  var txt=document.getElementById('promptBox').textContent;
+  try{navigator.clipboard.writeText(txt)}catch(e){var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
+  showToast(t('copied'));
 }
 
-function resetAll(){
-  step=0;mode=null;sceneId=null;birth={};universalAnswers=[];sceneAnswers=[];
-  document.getElementById('result').classList.remove('visible');
-  render();
-}
-function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}
-render();
+function resetAll(){step=0;mode=null;sceneId=null;birth={};universalAnswers=[];sceneAnswers=[];document.getElementById('result').classList.remove('visible');render();}
+function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(function(){el.classList.remove('show')},2500)}
+
+// Restore saved language
+(function(){
+  var saved; try{saved=localStorage.getItem('warmstart_uiLang')}catch(e){saved=null}
+  if(saved==='en') switchLang('en'); else switchLang('zh');
+})();
 </script>
 </body>
 </html>
